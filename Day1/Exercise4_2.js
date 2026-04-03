@@ -73,3 +73,4 @@ console.log(readNumber(105));
 console.log(readNumber(10));
 console.log(readNumber(1005));
 console.log(readNumber(120021));
+console.log(readNumber(100001));
