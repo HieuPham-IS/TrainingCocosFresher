@@ -1,0 +1,19 @@
+[
+  {
+    "id": 1,
+    "name": "heiu",
+    "email": "h@gmail.com",
+    "phone": "0345677654",
+    "borrowbook": []
+  },
+  {
+    "id": 2,
+    "name": "hoa",
+    "email": "hi@gmail.com",
+    "phone": "0356787654",
+    "borrowbook": [
+      "w",
+      "t"
+    ]
+  }
+]

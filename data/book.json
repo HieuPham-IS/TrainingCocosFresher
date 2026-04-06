@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "title": "q",
+    "author": "b",
+    "category": "c",
+    "quantity": 1,
+    "availableQuantity": 1
+  },
+  {
+    "id": 2,
+    "title": "w",
+    "author": "e",
+    "category": "q",
+    "quantity": 3,
+    "availableQuantity": 3
+  },
+  {
+    "id": 3,
+    "title": "t",
+    "author": "q",
+    "category": "a",
+    "quantity": 3,
+    "availableQuantity": 2
+  }
+]
