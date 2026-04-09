@@ -1,0 +1,12 @@
+[
+  {
+    "id": "1",
+    "type": "INCOME",
+    "category": "SALES",
+    "amount": 100000,
+    "paymentMethod": "CASH",
+    "referenceId": "4",
+    "createdBy": "S001",
+    "createdAt": "2026-04-09T08:58:09.141Z"
+  }
+]

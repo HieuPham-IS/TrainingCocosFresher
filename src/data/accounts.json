@@ -1,0 +1,30 @@
+[
+  {
+    "id": "1",
+    "staffId": "S001",
+    "username": "admin",
+    "password": "Admin@123",
+    "role": "ADMIN"
+  },
+  {
+    "id": "2",
+    "staffId": "S002",
+    "username": "admin2",
+    "password": "Admin@123",
+    "role": "MANAGER"
+  },
+  {
+    "id": "3",
+    "staffId": "S004",
+    "username": "hieu",
+    "password": "Hieu123@",
+    "role": "STAFF"
+  },
+  {
+    "id": "4",
+    "staffId": "S005",
+    "username": "long",
+    "password": "Long1234@",
+    "role": "STAFF"
+  }
+]

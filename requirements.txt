@@ -1,0 +1,216 @@
+CLOTHING STORE ACCOUNTING & MANAGEMENT SYSTEM
+
+==============================
+OVERVIEW
+==============================
+
+This project is a Clothing Store Management System integrated with basic accounting features.
+
+The system helps manage:
+- Sales (Invoices)
+- Inventory (Stock & Cost)
+- Expenses
+- Supplier payments
+- Staff activities
+- Financial reports
+
+==============================
+OBJECTIVES
+==============================
+
+- Manage product inventory efficiently
+- Track revenue and expenses
+- Calculate profit and loss
+- Support staff operations
+- Provide financial insights through reports
+
+==============================
+DATA MODELS
+==============================
+
+1. Product
+- id: product identifier
+- name: product name
+- category: product category
+- size: (S, M, L, XL)
+- color: product color
+- material: product material
+- price: selling price
+- costPrice: cost price
+- stock: available quantity
+- minThreshold: minimum stock alert level
+
+------------------------------
+
+2. Customer
+- id: customer identifier
+- name: customer name
+- phone: phone number
+- totalSpent: total spending
+- rank: (NORMAL, SILVER, GOLD, VIP)
+
+------------------------------
+
+3. Staff
+- id: staff identifier
+- name: staff name
+- phone: phone number
+- role: (ADMIN, MANAGER, STAFF)
+- salary: salary amount
+
+------------------------------
+
+4. Account
+- id: account identifier
+- staffId: linked staff ID
+- username: login username
+- password: login password
+- role: (ADMIN, MANAGER, STAFF)
+
+------------------------------
+
+5. Invoice
+- id: invoice identifier
+- customerId: customer ID (optional)
+- staffId: staff who created the invoice
+- items: list of purchased items
+- totalAmount: total amount
+- discount: discount value
+- finalAmount: final payable amount
+- paymentMethod: (CASH, BANK_TRANSFER, CARD, E_WALLET)
+- createdAt: creation date
+
+------------------------------
+
+6. InvoiceItem
+- productId: product ID
+- quantity: quantity sold
+- price: selling price
+- cost: cost price
+
+------------------------------
+
+7. Purchase
+- id: purchase identifier
+- supplier: supplier name
+- staffId: staff responsible
+- items: list of purchased items
+- totalCost: total cost
+- createdAt: creation date
+
+------------------------------
+
+8. PurchaseItem
+- productId: product ID
+- quantity: quantity purchased
+- costPrice: purchase cost
+
+------------------------------
+
+9. InventoryBatch
+- id: batch identifier
+- productId: product ID
+- quantity: quantity in batch
+- costPrice: batch cost price
+- importedAt: import date
+- createdBy: creator (staffId)
+
+------------------------------
+
+10. Transaction
+- id: transaction identifier
+- type: (INCOME)
+- category: (SALES, PURCHASE, SALARY, RENT, MARKETING, REFUND)
+- amount: transaction amount
+- paymentMethod: (CASH, BANK_TRANSFER, CARD, E_WALLET)
+- referenceId: related entity ID (invoice/purchase)
+- createdBy: staffId
+- createdAt: creation date
+
+------------------------------
+
+11. Expenses
+- id: expense identifier
+- type: (FIXED, VARIABLE)
+- amount: expense amount
+- description: expense description
+- paymentMethod: (CASH, BANK_TRANSFER, CARD, E_WALLET)
+- createdBy: staffId
+- date: expense date
+
+------------------------------
+
+12. Refund
+- id: refund identifier
+- invoiceId: related invoice ID
+- items: returned items
+- refundAmount: total refund amount
+- createdBy: staffId
+- createdAt: creation date
+
+------------------------------
+
+13. ReturnItem
+- productId: product ID
+- quantity: returned quantity
+
+------------------------------
+
+14. PeriodReport
+- revenue: total revenue
+- cogs: cost of goods sold
+- expenses: total expenses
+- grossProfit: gross profit
+- netProfit: net profit
+- momGrowth: month-over-month growth
+- yoyGrowth: year-over-year growth
+- totalOrders: total number of orders
+- aov: average order value
+
+==============================
+FEATURES
+==============================
+
+1. Sales Management
+- Create invoices
+- Calculate totals and discounts
+- Immediate payment processing
+- Automatically generate transactions
+- Deduct inventory stock
+
+------------------------------
+
+2. Inventory Management
+- Track stock quantity
+- Import goods
+- Manage inventory batches for cost calculation
+- Low stock alerts
+
+------------------------------
+
+3. Accounting
+- Record income and expenses
+- Track supplier payments/debts
+- Monitor cash flow
+
+------------------------------
+
+4. Refund Management
+- Handle partial or full returns
+- Restore inventory
+- Record refund transactions
+
+------------------------------
+
+5. Staff Management
+- Manage employees
+- Role-based access control:
+  ADMIN | MANAGER | STAFF
+
+------------------------------
+
+6. Reporting
+- Profit & Loss (P&L)
+- Revenue tracking
+- Expense tracking
+- Sales performance analysis
