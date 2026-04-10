@@ -1,4 +1,5 @@
 import { readData, writeData} from "../utils/fileManager";
+import { IdGenerator } from "../utils/id-generator";
 import { Customer } from '../types/customer.interface';
 import { CustomerModel } from "../models/Customer";
 
@@ -7,12 +8,7 @@ export class CustomerServices{
     private path: string = "./data/customers.json";
 
     private generateId(): string {
-        if (this.customers.length === 0){
-            return "1";
-        }
-      
-        const max = Math.max(...this.customers.map(cus => parseInt(cus.id))); 
-        return (max + 1).toString();
+        return IdGenerator.generateSimpleId(this.customers);
     }
 
     constructor(){

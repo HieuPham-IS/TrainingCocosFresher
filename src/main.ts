@@ -4,6 +4,11 @@ import { CustomerServices } from "./services/customer.services";
 import { ProductServices } from "./services/product.services";
 import { InvoiceServices } from "./services/invoice.services";
 import { TransactionServices } from "./services/transaction.services";
+import { ExpenseServices } from "./services/expense.services";
+import { InventoryBatchServices } from "./services/inventory-batch.services";
+import { PurchaseServices } from "./services/purchase.services";
+import { RefundServices } from "./services/refund.services";
+import { PeriodReportServices } from "./services/period-report.services";
 import { AccountModel } from "./models/Account";
 import { CustomerModel } from "./models/Customer";
 
@@ -17,6 +22,11 @@ const customerService = new CustomerServices();
 const productService = new ProductServices();
 const invoiceService = new InvoiceServices();
 const transactionService = new TransactionServices();
+const expenseService = new ExpenseServices();
+const inventoryBatchService = new InventoryBatchServices();
+const purchaseService = new PurchaseServices(transactionService);
+const refundService = new RefundServices(transactionService, invoiceService);
+const periodReportService = new PeriodReportServices(invoiceService, expenseService, inventoryBatchService, refundService, purchaseService);
 
 function start() {
     console.log("\n===== LOGIN =====");
@@ -118,6 +128,7 @@ function manageMenu(user: AccountModel) {
     console.log("3. Create Invoice");
     console.log("4. Process Return");
     console.log("5. Manage Transactions");
+    console.log("6. View Business Reports");
     console.log("0. Back");
 
     rl.question("Choose: ", (choice) => {
@@ -136,6 +147,9 @@ function manageMenu(user: AccountModel) {
             break;
         case "5":
             transactionMenu(user);
+            break;
+        case "6":
+            businessReportsMenu(user);
             break;
         case "0":
             menu(user);
@@ -424,7 +438,6 @@ function createInvoiceMenu(user: AccountModel) {
 
                     productService.updateStock(product.id, -quantity);
 
-                    // Create transaction for sales
                     transactionService.createTransaction(
                         "SALES",
                         finalAmount,
@@ -460,16 +473,16 @@ function processReturnMenu(user: AccountModel) {
             return processReturnMenu(user);
         }
 
-        invoice.items.forEach(item => {
-            productService.updateStock(item.productId, item.quantity);
-        });
+            invoice.items.forEach(item => {
+                productService.updateStock(item.productId, item.quantity);
+            });
 
-        if (invoice.customerId) {
+            if (invoice.customerId) {
             customerService.updateTotalSpent(invoice.customerId, -invoice.finalAmount);
-        }
+            }
 
         console.log("Return processed.");
-        manageMenu(user);
+            manageMenu(user);
     });
 }
 
@@ -515,7 +528,64 @@ function transactionMenu(user: AccountModel) {
         }
     });
 }
+function businessReportsMenu(user: AccountModel) {
+    console.log("\n=== BUSINESS REPORTS ===");
+    console.log("1. Generate Period Report");
+    console.log("0. Back");
 
+    rl.question("Choose: ", (choice) => {
+        switch (choice) {
+        case "1":
+            generatePeriodReportMenu(user);
+            break;
+        case "0":
+            manageMenu(user);
+            break;
+        default:
+            businessReportsMenu(user);
+        }
+    });
+}
+
+function generatePeriodReportMenu(user: AccountModel) {
+    console.log("\n=== GENERATE PERIOD REPORT ===");
+
+    rl.question("Start Date (YYYY-MM-DD): ", (startDateStr) => {
+        const startDate = new Date(startDateStr);
+        if (isNaN(startDate.getTime())) {
+            console.log("Invalid start date. Try again.");
+            return generatePeriodReportMenu(user);
+        }
+
+        rl.question("End Date (YYYY-MM-DD): ", (endDateStr) => {
+            const endDate = new Date(endDateStr);
+            if (isNaN(endDate.getTime())) {
+                console.log("Invalid end date. Try again.");
+                return generatePeriodReportMenu(user);
+            }
+
+            if (startDate > endDate) {
+                console.log("Start date cannot be after end date. Try again.");
+                return generatePeriodReportMenu(user);
+            }
+
+            const report = periodReportService.generatePeriodReport(startDate, endDate);
+
+            console.log(`\n=== PERIOD REPORT (${startDateStr} to ${endDateStr}) ===`);
+            console.log(`Revenue: $${report.revenue.toFixed(2)}`);
+            console.log(`Cost of Goods Sold: $${report.cogs.toFixed(2)}`);
+            console.log(`Expenses: $${report.expenses.toFixed(2)}`);
+            console.log(`Gross Profit: $${report.grossProfit.toFixed(2)}`);
+            console.log(`Net Profit: $${report.netProfit.toFixed(2)}`);
+            console.log(`Total Orders: ${report.totalOrders}`);
+            console.log(`Average Order Value: $${report.aov.toFixed(2)}`);
+            console.log(`Month-over-Month Growth: ${report.momGrowth.toFixed(2)}%`);
+            console.log(`Year-over-Year Growth: ${report.yoyGrowth.toFixed(2)}%`);
+
+            businessReportsMenu(user);
+        });
+    });
+}
 function createManualTransactionMenu(user: AccountModel) {
     console.log("\n=== CREATE MANUAL TRANSACTION ===");
 

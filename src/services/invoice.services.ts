@@ -1,4 +1,5 @@
 import { readData, writeData } from "../utils/fileManager";
+import { IdGenerator } from "../utils/id-generator";
 import { Invoice } from '../types/invoice.interface';
 import { InvoiceModel } from "../models/Invoice";
 
@@ -7,12 +8,7 @@ export class InvoiceServices{
     private path: string = "./data/invoices.json";
 
     private generateId(): string {
-        if (this.invoices.length === 0){
-            return "1";
-    }
-      
-        const max = Math.max(...this.invoices.map(inv => parseInt(inv.id)));
-        return (max + 1).toString();
+        return IdGenerator.generateSimpleId(this.invoices);
     }
 
     constructor(){

@@ -1,27 +1,18 @@
 import { AccountModel } from "../models/Account";
 import { readData, writeData } from "../utils/fileManager";
+import { IdGenerator } from "../utils/id-generator";
 import { Account } from '../types/account.interface';
 
 export class AccountServices{
     private accounts: AccountModel[] = [];
     private path: string = "./data/accounts.json";
+
     private generateId(): string {
-        if (this.accounts.length === 0){
-            return "1";
-        }
-        
-        const max = Math.max(...this.accounts.map(acc => parseInt(acc.id)));
-        return (max + 1).toString();
+        return IdGenerator.generateSimpleId(this.accounts);
     }
-    private generateStaffId(): string{
-        if(this.accounts.length === 0) {
-            return "S001";
-        }
 
-        const max = Math.max(...this.accounts.map(acc => parseInt(acc.staffId.replace("S", ""))));
-        const nextNumber = max + 1;
-        return "S" + nextNumber.toString().padStart(3, "0");
-
+    private generateStaffId(): string {
+        return IdGenerator.generateStaffId(this.accounts);
     }
 
     constructor(){

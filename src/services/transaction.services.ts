@@ -1,4 +1,5 @@
 import { readData, writeData } from "../utils/fileManager";
+import { IdGenerator } from "../utils/id-generator";
 import { Transaction } from '../types/interface'
 import { TransactionModel } from "../models/Transaction";
 
@@ -7,14 +8,8 @@ export class TransactionServices{
     private path: string = "./data/transactions.json";
 
     private generateId(): string {
-        if (this.transactions.length === 0) return "1";
-
-        const max = Math.max(
-          ...this.transactions.map(trans => parseInt(trans.id))
-        );
-
-        return (max + 1).toString();
-      }
+        return IdGenerator.generateSimpleId(this.transactions);
+    }
 
     constructor(){
         const data = readData(this.path);

@@ -1,4 +1,5 @@
 import { readData, writeData } from "../utils/fileManager";
+import { IdGenerator } from "../utils/id-generator";
 import { Product } from '../types/product.interface';
 import { ProductModel } from "../models/Product";
 
@@ -7,12 +8,7 @@ export class ProductServices{
     private path: string = "./data/products.json";
 
     private generateId(): string {
-        if (this.products.length === 0){ 
-            return "1";
-        }
-        
-        const max = Math.max(...this.products.map(prod => parseInt(prod.id)));
-        return (max + 1).toString();
+        return IdGenerator.generateSimpleId(this.products);
     }
 
     constructor(){
