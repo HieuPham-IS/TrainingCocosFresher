@@ -1,2 +1,2 @@
-# hello-world
-Hello world new project template.
+# Exercise 14-04-2026
+
