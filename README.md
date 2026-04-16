@@ -1,4 +1,8 @@
-# EXERCISE1: CACHE MODE
+# Research exercise
++ Exercise 1: [CACHE MODE](#exercise-1-cache-mode)
++ Exercise 2: [LIFECYCLE OF A COMPONENT](#exercise-2-lifecycle-of-a-component)
+---
+# CACHE MODE
 
 ## 1. Khái niệm Cache Mode
 
@@ -86,7 +90,7 @@ Nhược điểm: Chỉ hỗ trợ system font và một số TTF nhất định
 
 ---
 
-# EXERCISE 2: LIFECYCLE OF A COMPONENT
+# LIFECYCLE OF A COMPONENT
 
 ## 1. Lifecycle là gì?
 
