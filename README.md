@@ -1,4 +1,4 @@
-# CACHE MODE
+# EXERCISE1: CACHE MODE
 
 ## 1. Khái niệm Cache Mode
 
@@ -15,36 +15,28 @@ Thay vì mỗi frame đều vẽ lại chữ, engine có thể:
 
 ## 2. Các loại Cache Mode
 
-NONE: Mỗi label được coi là một đối tượng riêng biệt, vẽ trực tiếp mỗi frame
+**NONE**: Mỗi label được coi là một đối tượng riêng biệt, vẽ trực tiếp mỗi frame
 
-BITMAP: Chuyển nội dung Label thành một bức ảnh (Sprite Frame) và lưu vào một bộ nhớ đệm dùng chung (Dynamic Atlas)
+**BITMAP**: Chuyển nội dung Label thành một bức ảnh (Sprite Frame) và lưu vào một bộ nhớ đệm dùng chung (Dynamic Atlas)
 
-CHAR: Chia nhỏ từng ký tự trong Label thành các ảnh riêng lẻ và lưu chúng vào một Atlas dùng
+**CHAR**: Chia nhỏ từng ký tự trong Label thành các ảnh riêng lẻ và lưu chúng vào một Atlas dùng
 
 ---
 
 ## 3. Công dụng và so sánh chi tiết các loại Cache Mode
 
-### NONE
+| Đặc điểm | NONE | BITMAP | CHAR |
+| :--- | :--- | :--- | :--- |
+| **Cơ chế** | Vẽ lại mỗi khi có thay đổi | Chụp cả cụm từ thành 1 tấm ảnh | Lưu từng chữ cái (A, B, ...) và cache |
+| **Draw Call** | Cao (Mỗi Label = 1 hoặc nhiều DC) | Rất thấp (Có thể batching tốt) | Thấp (Tái sử dụng ký tự) |
+| **Bộ nhớ** | Thấp | Cao (Tạo ra nhiều ảnh tạm) | Trung bình |
+| **Độ sắc nét** | Cao nhất | Dễ bị mờ nếu scale | Tốt cho system font |
 
-* Cơ chế: Vẽ lại mỗi khi có thay đổi
-* Draw call: Cao (Mỗi Label = 1 hoặc nhiều DC)
-* Bộ nhớ: Thấp
-* Độ sắc nét: Cao nhất
-
-### BITMAP
-
-* Cơ chế: Chụp cả cụm từ thành 1 tấm ảnh
-* Draw call: Rất thấp (có thể batching tốt)
-* Bộ nhớ: Cao (tạo ra nhiều ảnh tạm)
-* Độ sắc nét: Dễ bị mờ nếu scale
-
-### CHAR
-
-* Cơ chế: Lưu từng chữ cái (A, B, ...) và cache
-* Draw call: Thấp (tái sử dụng ký tự)
-* Bộ nhớ: Trung bình
-* Độ sắc nét: Tốt cho system font
+## Chú ý:
+- **NONE:** Phù hợp cho các nhãn (Label) thường xuyên thay đổi nội dung (như đồng hồ đếm giây).
+- **BITMAP:** Tốt nhất cho các nhãn tĩnh, số lượng nhiều nhưng ít thay đổi (như tên quái vật, số lượng vật phẩm).
+- **CHAR:** Phù hợp cho các đoạn văn bản dài hoặc các nhãn sử dụng font hệ thống mà cần tối ưu hiệu năng.
+"""
 
 ---
 
@@ -91,7 +83,10 @@ Nhược điểm: Chỉ hỗ trợ system font và một số TTF nhất định
 * Hạn chế dùng với Label quá dài: Nếu text dài, engine sẽ tạo texture rất lớn gây tốn tài nguyên
 * Sử dụng Label Atlas thay thế nếu có thể: Đặc biệt với số (điểm, tiền) thì LabelAtlas hoặc BMFont tối ưu hơn
 * Kiểm tra trên thiết bị thật: Một số máy Android cũ xử lý Dynamic Atlas chậm, có thể gây lỗi hiển thị
-# Lifecycle of a Component
+
+---
+
+# EXERCISE 2: LIFECYCLE OF A COMPONENT
 
 ## 1. Lifecycle là gì?
 
@@ -105,19 +100,7 @@ Hiểu đơn giản:
 
 ## 2. Luồng lifecycle
 
-onLoad  
-↓  
-onEnable  
-↓  
-start  
-↓  
-update (mỗi frame)  
-↓  
-lateUpdate (mỗi frame, sau update)  
-↓  
-onDisable  
-↓  
-onDestroy  
+`onLoad` → `onEnable` → `start` → `update` → `lateUpdate` → `onDisable` → `onDestroy`
 
 ---
 
@@ -317,8 +300,6 @@ onLoad() {
 ### Pooling vs Destroy
 - destroy → gọi onDestroy
 - reuse → chỉ onEnable/onDisable
-
----
 
 ---
 
