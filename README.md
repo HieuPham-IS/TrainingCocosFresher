@@ -1,6 +1,6 @@
 # Research exercise
-+ Exercise 1: [CACHE MODE](#exercise-1-cache-mode)
-+ Exercise 2: [LIFECYCLE OF A COMPONENT](#exercise-2-lifecycle-of-a-component)
++ Exercise 1: [CACHE MODE](#cache-mode)
++ Exercise 2: [LIFECYCLE OF A COMPONENT](#lifecycle-of-a-component)
 ---
 # CACHE MODE
 
