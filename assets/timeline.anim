@@ -1,0 +1,39 @@
+{
+  "__type__": "cc.AnimationClip",
+  "_name": "timeline",
+  "_objFlags": 0,
+  "_native": "",
+  "_duration": 1,
+  "sample": 60,
+  "speed": 1,
+  "wrapMode": 2,
+  "curveData": {
+    "props": {
+      "position": [
+        {
+          "frame": 0,
+          "value": [
+            -135.108,
+            -138.558,
+            0
+          ],
+          "curve": [
+            0.94,
+            0,
+            0.06,
+            1
+          ]
+        },
+        {
+          "frame": 1,
+          "value": [
+            108.416,
+            -143.153,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  "events": []
+}
