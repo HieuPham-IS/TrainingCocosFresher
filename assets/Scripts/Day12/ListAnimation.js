@@ -13,6 +13,7 @@ cc.Class({
     },
 
     onLoad() {
+
         for (let i = 0; i < this.uiNodes.length; i++) {
             let n = this.uiNodes[i];
             if (n) {
