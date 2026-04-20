@@ -17,8 +17,7 @@ cc.Class({
             this.spineStartY = this.spine.node.y;
         }
 
-        this._playAnimBound = this.playAnim.bind(this);
-        Emitter.on("PLAY_ANIM", this._playAnimBound);
+        Emitter.on("PLAY_ANIM", this.playAnim.bind(this));
 
         Emitter.on("HELLO", this.onHello.bind(this));
         Emitter.once("WELCOME", this.onWelcome.bind(this));
@@ -56,10 +55,6 @@ cc.Class({
             return;
         }
         this.spine.setAnimation(0, animName, true);
-    },
-
-    onDestroy() {
-        Emitter.off("PLAY_ANIM", this._playAnimBound);
     },
 
     onHello(data) {
