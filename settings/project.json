@@ -2,11 +2,23 @@
   "collision-matrix": [
     [
       true
+    ],
+    [
+      false,
+      false,
+      true
+    ],
+    [
+      false,
+      true,
+      false
     ]
   ],
   "excluded-modules": [],
   "group-list": [
-    "default"
+    "default",
+    "bullet",
+    "monster"
   ],
   "design-resolution-width": 1560,
   "design-resolution-height": 720,
@@ -33,5 +45,5 @@
   },
   "preview-port": 7456,
   "clear-simulator-cache": true,
-  "start-scene": "824c5e5a-2a34-4a83-b0e5-ec75a2bae715"
+  "start-scene": "4c7319d1-a2ba-4e7f-857d-ab04d17e286a"
 }
