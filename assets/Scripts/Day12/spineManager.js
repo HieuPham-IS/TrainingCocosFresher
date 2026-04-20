@@ -85,8 +85,8 @@ cc.Class({
         cc.log("Run Tween");
 
         cc.tween(this.node)
-            .to(1, { position: cc.v2(100, 100), angle: -360 })
-            .to(1, { scale: 2 })
+            .to(1, { position: cc.v2(50, 50), angle: -360 })
+            .to(1, { scale: 1.5 })
             .start();
     },
 
