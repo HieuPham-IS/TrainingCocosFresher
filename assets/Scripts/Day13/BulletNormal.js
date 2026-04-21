@@ -22,6 +22,7 @@ cc.Class({
 
     onCollide(target, self) {
         const worldPos = self.node.convertToWorldSpaceAR(cc.v2(0, 0));
+        console.log(`[Bullet] Collided with Monster at WorldPos: x=${worldPos.x.toFixed(2)}, y=${worldPos.y.toFixed(2)}`);
         Emitter.emit(EventKey.MONSTER.ON_HIT, target.getComponent('Monster'), this, worldPos);
         this.onClear();
         cc.log("COLLIDE", this.damage, target.getComponent('Monster').hp);

@@ -1,19 +1,14 @@
 const Emitter = require('mEmitter');
 const EventKey = require('EventKey');
-
-const NORMAL_BULLET = {
-    NAME: 'normal',
-    DURATION_MOVE: 1.2,
-    DAMAGE: 10,
-};
+const gameConfig = require('GameConfig');
 
 cc.Class({
     extends: cc.Component,
 
     properties: {
-        bulletPrefab: {
+        gameAsset: {
             default: null,
-            type: cc.Prefab
+            type: require('GameAsset')
         },
         listBullet: {
             default: [],
@@ -25,6 +20,7 @@ cc.Class({
         let manager = cc.director.getCollisionManager();
         manager.enabled = true;
         manager.enabledDebugDraw = false
+
         this.clearEditorPlacedBullets();
         this.registerEvent();
     },
@@ -36,9 +32,9 @@ cc.Class({
         this.setupBullet(bullet, worldPos);
     },
     createBullet(type) {
-        const prefab = this.bulletPrefab;
+        const prefab = this.gameAsset.getBulletPrefabByType(type.NAME);
         const bullet = cc.instantiate(prefab);
-        const component = bullet.getComponent('BulletNormal');
+        const component = bullet.getComponent('Bullet');
         const initData = this.getBulletInitData(type);
         component.init(initData);
         return { bullet, component };
@@ -69,6 +65,7 @@ cc.Class({
     },
     setBulletPosition(bullet, worldPos) {
         const nodePos = this.node.convertToNodeSpaceAR(worldPos);
+        console.log(`[BulletController] Bullet Local Pos in Scene: x=${nodePos.x.toFixed(2)}, y=${nodePos.y.toFixed(2)}`);
         bullet.setPosition(nodePos.x, nodePos.y);
     },
     generateBulletId() {
@@ -94,7 +91,7 @@ cc.Class({
         this.eventHandles = null;
     },
     onShootNormalBullet(worldPos) {
-        this.initBulletByType(NORMAL_BULLET, worldPos);
+        this.initBulletByType(gameConfig.BULLET.TYPE.NORMAL, worldPos);
     },
     clearEditorPlacedBullets() {
         const children = this.node.children.slice();
@@ -103,13 +100,5 @@ cc.Class({
                 child.destroy();
             }
         });
-    },
-    clearAllBullets() {
-        this.listBullet.forEach((bullet) => {
-            if (bullet && bullet.node) {
-                bullet.onClear();
-            }
-        });
-        this.listBullet = [];
     }
 });

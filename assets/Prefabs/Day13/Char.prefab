@@ -52,7 +52,7 @@
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
-        -564.191,
+        -564.291,
         -162.961,
         0,
         0,
@@ -112,8 +112,8 @@
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
-        225.64,
-        125.745,
+        229.165,
+        106.073,
         0,
         0,
         0,
@@ -174,7 +174,7 @@
     "_frameCache": null,
     "_curFrame": null,
     "_skeletonCache": null,
-    "_animationName": "shoot",
+    "_animationName": "idle",
     "_animationQueue": [],
     "_headAniInfo": null,
     "_playTimes": 0,

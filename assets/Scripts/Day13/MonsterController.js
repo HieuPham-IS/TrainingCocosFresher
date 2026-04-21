@@ -1,5 +1,6 @@
 const EventKey = require('EventKey');
 const Emitter = require('mEmitter');
+const gameConfig = require('GameConfig');
 
 cc.Class({
     extends: cc.Component,
@@ -9,12 +10,15 @@ cc.Class({
             default: null,
             type: cc.Prefab
         },
+        gameAsset: {
+            default: null,
+            type: require('GameAsset')
+        },
         listMonster: {
             default: [],
             type: [require('Monster')],
             visible: false
         },
-        monsterSpriteFrame: cc.SpriteFrame
     },
 
     onLoad() {
@@ -29,7 +33,7 @@ cc.Class({
     },
 
     start() {
-        this.spawnMonster();
+        this.spawnMonster(gameConfig.MONSTER.TYPE.DRAGON);
     },
 
     initializeMonsterList() {
@@ -55,30 +59,31 @@ cc.Class({
         this.eventHandles = null;
     },
 
-    spawnMonster() {
-        const monster = this.createMonster();
+    spawnMonster(type) {
+        const monster = this.createMonster(type);
         if (monster) {
             this.addMonsterToScene(monster);
             this.addMonsterToList(monster.getComponent('Monster'));
         }
     },
 
-    createMonster() {
+    createMonster(type) {
         const monsterNode = cc.instantiate(this.monsterPrefab);
         const monsterComponent = monsterNode.getComponent('Monster');
-        const monsterData = this.createMonsterData();
+        const monsterData = this.createMonsterData(type);
         monsterComponent.init(monsterData);
         return monsterNode;
     },
 
-    createMonsterData() {
-        return {
+    createMonsterData(type) {
+        const monsterData = {
             id: this.generateMonsterId(),
-            type: 'normal',
-            hp: 100,
-            maxHP: 100,
-            spriteFrame: this.monsterSpriteFrame
+            type: type,
+            hp: type.HP,
+            spriteFrame: this.gameAsset.getSpriteByType(type.NAME)
         };
+        console.log('monsterData', monsterData);
+        return monsterData;
     },
 
     addMonsterToScene(monsterNode) {

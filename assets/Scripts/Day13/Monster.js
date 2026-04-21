@@ -32,18 +32,4 @@ cc.Class({
             .start();
     },
 
-    stopAllTween() {
-        this.stopTween(
-            this.moveTween,
-            this.dieTween
-        )
-    },
-    stopTween(...tweens) {
-        tweens.forEach(tween => {
-            if (tween) {
-                tween.stop();
-            }
-        });
-    },
-
 });

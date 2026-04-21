@@ -42,7 +42,6 @@ cc.Class({
     update(dt) {
         if (this.hp < this.maxHP) {
             this.updateHP();
-            this.updateHPBar();
         }
 
     },
@@ -57,6 +56,7 @@ cc.Class({
         this.sprite.spriteFrame = data.spriteFrame;
     },
     updateHP() {
+        this.updateHPBar();
         if (this.shouldDie()) {
             Emitter.emit(EventKey.MONSTER.ON_DIE, this);
         }

@@ -20,9 +20,7 @@ cc.Class({
             default: "",
             visible: false
         },
-        moveDistance: {
-            default: 2000
-        }
+
 
     },
 
@@ -33,7 +31,7 @@ cc.Class({
         this.damage = data.damage;
     },
 
-    onMove(){
+    onMove() {
 
     },
 
