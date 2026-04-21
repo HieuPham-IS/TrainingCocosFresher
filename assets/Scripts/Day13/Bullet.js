@@ -2,31 +2,50 @@ cc.Class({
     extends: cc.Component,
 
     properties: {
+        id: {
+            default: "",
+            visible: false
+        },
+        durationMove: {
+            default: 0,
+            type: cc.Float,
+            visible: false
+        },
+        damage: {
+            default: 0,
+            type: cc.Float,
+            visible: false
+        },
+        type: {
+            default: "",
+            visible: false
+        },
+        moveDistance: {
+            default: 2000
+        }
 
     },
 
-
-    onLoad() {
-        let manager = cc.director.getCollisionManager();
-        manager.enabled = true;
-        manager.enabledDebugDraw = false;
+    init(data) {
+        this.id = data.id;
+        this.type = data.type;
+        this.durationMove = data.durationMove;
+        this.damage = data.damage;
     },
 
-    start() {
+    onMove(){
 
     },
 
-    onCollisionEnter: function (other, self) {
-        console.log('on collision enter');
+    onClear() {
+        if (this.moveTween) {
+            this.moveTween.stop();
+            this.moveTween = null;
+        }
+        if (this.node && this.node.isValid) {
+            this.node.destroy();
+        }
     },
-
-    // onCollisionStay: function (other, self) {
-    //     console.log('on collision stay');
-    // },
-
-    onCollisionExit: function (other, self) {
-        console.log('on collision exit');
-    }
 
     // update (dt) {},
 });

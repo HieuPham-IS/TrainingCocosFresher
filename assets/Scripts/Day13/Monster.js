@@ -1,26 +1,49 @@
 cc.Class({
-    extends: cc.Component,
+    extends: require('MonsterItem'),
 
     properties: {
 
     },
 
-    // onLoad () {},
-
-    start() {
-
+    onMove() {
+        this.moveTween = cc.tween(this.node)
+            .repeatForever(
+                cc.tween().sequence(
+                    cc.tween().by(2, { y: 200 }),
+                    cc.tween().by(2, { y: -200 })
+                )
+            )
+            .start();
     },
 
-    onCollisionEnter: function (other, self) {
-        console.log('on collision enter');
+    onDie() {
+        if (this._isDying) return;
+        this._isDying = true;
+
+        if (this.moveTween) {
+            this.moveTween.stop();
+        }
+
+        this.dieTween = cc.tween(this.node)
+            .to(0.8, { opacity: 0 })
+            .call(() => {
+                this.node.destroy();
+            })
+            .start();
     },
 
-    // onCollisionStay: function (other, self) {
-    //     console.log('on collision stay');
-    // },
+    stopAllTween() {
+        this.stopTween(
+            this.moveTween,
+            this.dieTween
+        )
+    },
+    stopTween(...tweens) {
+        tweens.forEach(tween => {
+            if (tween) {
+                tween.stop();
+            }
+        });
+    },
 
-    onCollisionExit: function (other, self) {
-        console.log('on collision exit');
-    }
-    // update (dt) {},
 });
