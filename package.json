@@ -1,0 +1,10 @@
+{
+  "name": "Day15",
+  "uuid": "4aef4441-cf3f-479c-999a-247f9ee54766",
+  "creator": {
+    "version": "3.7.3"
+  },
+  "devDependencies": {
+    "javascript-state-machine": "^3.1.0"
+  }
+}
