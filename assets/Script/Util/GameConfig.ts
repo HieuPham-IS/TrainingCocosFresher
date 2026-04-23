@@ -1,14 +1,21 @@
-import { _decorator, Component, Node } from 'cc';
-const { ccclass, property } = _decorator;
+export const gameConfig = {
+    MONSTER: {
+        TYPE: {
+            DRAGON: {
+                NAME: "DRAGON",
+                HP: 100
+            }
+        }
+    },
 
-@ccclass('GameConfig')
-export class GameConfig extends Component {
-    start() {
-
+    BULLET: {
+        TYPE: {
+            NORMAL: {
+                NAME: "NORMAL",
+                DAMAGE: 10,
+                SPEED: 1000,
+                DURATION_MOVE: 1.2
+            }
+        }
     }
-
-    update(deltaTime: number) {
-        
-    }
-}
-
+} as const;
