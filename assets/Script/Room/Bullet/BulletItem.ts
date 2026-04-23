@@ -15,7 +15,7 @@ export class BulletItem extends Component {
     @property({ visible: false })
     type: string = "";
 
-    private moveTween: any = null;
+    protected moveTween: any = null;
 
     init(data: any): void {
         this.id = data.id;

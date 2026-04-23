@@ -76,8 +76,8 @@ export class CharacterController extends Component {
 
         const visibleSize = view.getVisibleSize();
 
-        this.halfW = visibleSize.width / 2;
-        this.halfH = visibleSize.height / 2;
+        this.halfW = visibleSize.width / 6;
+        this.halfH = visibleSize.height / 3;
     }
     moveBy(dx: number, dy: number): void {
         const pos = this.node.position.clone();
