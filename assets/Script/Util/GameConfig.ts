@@ -3,6 +3,11 @@ export const gameConfig = {
         TYPE: {
             DRAGON: {
                 NAME: "DRAGON",
+                HP: 1000
+            },
+
+            WOLF: {
+                NAME: "WOLF",
                 HP: 100
             }
         }

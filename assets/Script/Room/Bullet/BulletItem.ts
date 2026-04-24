@@ -1,4 +1,4 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node, Tween } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('BulletItem')
@@ -15,7 +15,7 @@ export class BulletItem extends Component {
     @property({ visible: false })
     type: string = "";
 
-    protected moveTween: any = null;
+    protected moveTween: Tween<Node> = null;
 
     init(data: any): void {
         this.id = data.id;

@@ -96,10 +96,10 @@ export class GameController extends Component {
 
         }, shouldShowLoading ? 0.2 : 0);
 
-        console.log("Switch to:", state);
-        console.log("Lobby:", this.lobby);
-        console.log("Room:", this.room);
-        console.log("Begin:", this.begin);
+        // console.log("Switch to:", state);
+        // console.log("Lobby:", this.lobby);
+        // console.log("Room:", this.room);
+        // console.log("Begin:", this.begin);
     }
 
     registerEvents(): void {

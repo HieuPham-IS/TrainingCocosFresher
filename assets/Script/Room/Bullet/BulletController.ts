@@ -51,7 +51,7 @@ export class BulletController extends Component {
             damage: type.DAMAGE,
         };
 
-        console.log('getBulletInitData:', initData);
+        // console.log('getBulletInitData:', initData);
         return initData;
     }
 
@@ -75,7 +75,7 @@ export class BulletController extends Component {
     setBulletPosition(bullet: Node, worldPos: Vec3): void {
         const nodePos = this.node.inverseTransformPoint(new Vec3(), worldPos);
 
-        console.log(`[BulletController] Bullet Local Pos: x=${nodePos.x.toFixed(2)}, y=${nodePos.y.toFixed(2)}`);
+        // console.log(`[BulletController] Bullet Local Pos: x=${nodePos.x.toFixed(2)}, y=${nodePos.y.toFixed(2)}`);
 
         bullet.setPosition(nodePos);
     }
