@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, tween, Vec2, Vec3 } from 'cc';
+import { _decorator, Component, Node, tween, Vec3, Collider2D, Contact2DType, IPhysics2DContact } from 'cc';
 const { ccclass, property } = _decorator;
 import { mEmitter } from '../../Util/Event/mEmitter';
 import { EventKey } from '../../Util/Event/EventKey';
@@ -6,7 +6,15 @@ import { BulletItem } from './BulletItem';
 
 @ccclass('BulletNormal')
 export class BulletNormal extends BulletItem {
-    onCollisionEnter(other: any, self: any) {
+
+    protected onLoad(): void {
+        const collider = this.getComponent(Collider2D);
+        if (collider) {
+            collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
+        }
+    }
+
+    onBeginContact(self: Collider2D, other: Collider2D, contact: IPhysics2DContact | null) {
         this.onCollide(other, self);
     }
 
@@ -20,10 +28,12 @@ export class BulletNormal extends BulletItem {
     }
 
     onCollide(target: any, self: any): void {
-        const worldPos = self.node.worldPosition;
-        console.log(`[Bullet] Collided with Monster at WorldPos: x=${worldPos.x.toFixed(2)}, y=${worldPos.y.toFixed(2)}`);
-        mEmitter.instance.emit(EventKey.MONSTER.ON_HIT, target.node.getComponent('Monster'), this, worldPos);
-        this.onClear();
+        const monster = target.node.getComponent('Monster');
+        if (monster) {
+            const worldPos = self.node.worldPosition;
+            mEmitter.instance.emit(EventKey.MONSTER.ON_HIT, monster, this, worldPos);
+            this.onClear();
+        }
         console.log("COLLIDE", this.damage, target.node.getComponent('Monster').hp);
 
     }

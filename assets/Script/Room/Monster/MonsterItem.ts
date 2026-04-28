@@ -14,6 +14,12 @@ export class MonsterItem extends Component {
     @property({ type: Number, visible: false })
     hp: number = 0;
 
+    @property({ type: Number, visible: false })
+    maxHp: number = 0;
+
+    @property({ type: Number, visible: false })
+    damage: number = 0;
+
     @property(ProgressBar)
     hpBar: ProgressBar | null = null;
 
@@ -25,6 +31,7 @@ export class MonsterItem extends Component {
 
     protected moveTween: Tween<Node> = null;
     protected dieTween: Tween<UIOpacity> = null;
+    protected floatTween: Tween<Node> = null;
     protected isDying: boolean = false;
 
     update(deltaTime: number) {
@@ -35,6 +42,10 @@ export class MonsterItem extends Component {
         this.id = data.id;
         this.type = data.type;
         this.hp = data.hp;
+        console.log(`Monster ${this.id} initialized with HP: ${this.hp}`);
+        this.maxHp = data.maxHp;
+        this.damage = data.damage;
+        this.hpBar.progress = 1;
         this.durationMove = data.durationMove;
         this.sprite.spriteFrame = data.spriteFrame;
     }
@@ -59,7 +70,7 @@ export class MonsterItem extends Component {
     }
 
     updateHPBar() {
-
+        this.hpBar.progress = this.hp / this.maxHp;
     }
 }
 

@@ -9,12 +9,25 @@ export class GameAsset extends Component {
     @property(SpriteFrame)
     dragonSprite: SpriteFrame | null = null;
 
+    @property(SpriteFrame)
+    wolfSprite: SpriteFrame | null = null;
+
     @property(Prefab)
     normalBulletPrefab: Prefab | null = null;
 
+    @property(Prefab)
+    titleWavePrefab: Prefab | null = null;
+
+    @property(SpriteFrame)
+    dogSprite: SpriteFrame | null = null;
+
     getSpriteByType(type: string): SpriteFrame | null {
         switch (type) {
-            case gameConfig.MONSTER.TYPE.DRAGON.NAME:
+            case gameConfig.MONSTER.TYPE.WOLF.NAME:
+                return this.wolfSprite;
+            case gameConfig.MONSTER.TYPE.DOG.NAME:
+                return this.dogSprite;
+            case gameConfig.MONSTER.TYPE.BOSS.NAME:
                 return this.dragonSprite;
             default:
                 return null;
@@ -28,5 +41,8 @@ export class GameAsset extends Component {
             default:
                 throw new Error(`Bullet prefab not found for type: ${type}`);
         }
+    }
+    getTitleWavePrefab() {
+        return this.titleWavePrefab;
     }
 }

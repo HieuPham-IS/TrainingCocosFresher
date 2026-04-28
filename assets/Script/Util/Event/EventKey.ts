@@ -22,6 +22,22 @@ export const EventKey = {
     },
 
     GAME: {
-        STATE_CHANGED: 'STATE_CHANGED'
-    }
+        STATE_CHANGED: 'STATE_CHANGED',
+        REQUEST_EXIT: 'REQUEST_EXIT',
+        PREPARE_FOR_EXIT: 'PREPARE_FOR_EXIT',
+    },
+
+    WAVE: {
+        WAVE_COMPLETE: 'WAVE_COMPLETE',
+        START_WAVE: 'START_WAVE',
+        ON_WAVE_READY: "ON_WAVE_READY",
+    },
+
+    ROOM: {
+        START_GAME: 'START_GAME',
+        GAME_OVER: 'GAME_OVER',
+        SUMMARY_GAME: 'SUMMARY_GAME',
+        UPDATE_RESULT: 'UPDATE_RESULT',
+        EXIT: 'EXIT_ROOM',
+    },
 } as const;

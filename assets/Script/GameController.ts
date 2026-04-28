@@ -1,4 +1,4 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, director, game, Game, Node, sys } from 'cc';
 const { ccclass, property } = _decorator;
 import { mEmitter } from './Util/Event/mEmitter';
 import { EventKey } from './Util/Event/EventKey';
@@ -7,126 +7,117 @@ import StateMachine from 'javascript-state-machine';
 enum FSM_STATES {
     LOBBY = 'Lobby',
     ROOM = 'Room',
-    BEGIN = 'Begin'
+    EXITING = 'Exiting'
 }
 
 @ccclass('GameController')
 export class GameController extends Component {
+    static instance: GameController | null = null;
 
-    @property(Node)
-    lobby: Node | null = null;
+    @property({ visible: false })
+    fsm: any = null;
 
-    @property(Node)
-    room: Node | null = null;
+    @property({ visible: false })
+    isSceneLoading: boolean = false;
 
-    @property(Node)
-    begin: Node | null = null;
+    @property({ visible: false })
+    eventHandlers: Record<string, (...args: any[]) => void> | null = null;
 
-    @property(Node)
-    loading: Node | null = null;
+    @property({ visible: false })
+    singletonList: any[] = [];
 
-    private fsm: any = null;
-    private eventHandlers: Record<string, (...args: any[]) => void> | null = null;
-    private isSwitching: boolean = false;
-    private currentState: FSM_STATES | null = null;
+    private roomInitLoad: boolean = false;
+    private lobbyInitLoad: boolean = false;
 
     onLoad(): void {
         this.init();
+
     }
 
     init(): void {
+        if (GameController.instance) {
+            this.node.destroy();
+            return;
+        }
+
+        GameController.instance = this;
+        game.addPersistRootNode(this.node);
+
+        this.isSceneLoading = false;
+
         this.initFSM();
         this.registerEvents();
-
-        this.fsm.enterBegin();
+        this.addSingletonToList();
     }
 
     initFSM(): void {
         this.fsm = new StateMachine({
             init: 'init',
             transitions: [
-                { name: 'enterBegin', from: '*', to: FSM_STATES.BEGIN },
-                { name: 'enterLobby', from: [FSM_STATES.BEGIN], to: FSM_STATES.LOBBY },
-                { name: 'enterRoom', from: [FSM_STATES.LOBBY], to: FSM_STATES.ROOM },
-                { name: 'leaveRoom', from: FSM_STATES.ROOM, to: FSM_STATES.LOBBY },
+                { name: 'enterRoom', from: [FSM_STATES.LOBBY, 'init'], to: FSM_STATES.ROOM },
+                { name: 'leaveRoom', from: [FSM_STATES.ROOM], to: FSM_STATES.LOBBY },
+                { name: 'requestExit', from: [FSM_STATES.LOBBY, 'init'], to: FSM_STATES.EXITING }
             ],
             methods: {
-                onEnterBegin: () => {
-                    this.switchState(FSM_STATES.BEGIN);
-                },
-                onEnterLobby: () => {
-                    this.switchState(FSM_STATES.LOBBY);
-                },
-                onEnterRoom: () => {
-                    this.switchState(FSM_STATES.ROOM);
+                onEnterLobby: (lifecycle: any) => {
+                    this.emitStateChange(FSM_STATES.LOBBY, lifecycle.from);
+
+                    if (this.isSceneLoading) return;
+                    this.loadSceneInternal('Lobby');
                 },
 
+                onEnterRoom: (lifecycle: any) => {
+                    this.emitStateChange(FSM_STATES.ROOM, lifecycle.from);
+
+                    if (this.isSceneLoading) return;
+                    this.loadSceneInternal('Room');
+                },
+
+                onEnterExiting: () => {
+                    mEmitter.instance.emit(EventKey.GAME.PREPARE_FOR_EXIT);
+                    this.executeExitSteps();
+                },
             }
         });
     }
 
-    switchState(state: FSM_STATES): void {
-        if (this.isSwitching) return;
-        this.isSwitching = true;
-
-        if (state === FSM_STATES.ROOM && this.room) {
-            this.setActiveRecursive(this.room, true);
-        }
-
-        const prevState = this.currentState;
-        this.currentState = state;
-        const shouldShowLoading = prevState !== null && !(prevState === null && state === FSM_STATES.BEGIN);
-
-
-        if (this.loading) {
-            this.loading.active = shouldShowLoading;
-            this.loading.setSiblingIndex(this.loading.parent!.children.length - 1);
-        }
-
-        this.scheduleOnce(() => {
-            if (this.begin) this.begin.active = (state === FSM_STATES.BEGIN);
-            if (this.lobby) this.lobby.active = (state === FSM_STATES.LOBBY);
-            if (this.room) this.room.active = (state === FSM_STATES.ROOM);
-
-            if (this.loading) this.loading.active = false;
-
-            mEmitter.instance.emit(EventKey.GAME.STATE_CHANGED, state);
-
-            this.isSwitching = false;
-
-        }, shouldShowLoading ? 0.2 : 0);
-
-        // console.log("Switch to:", state);
-        // console.log("Lobby:", this.lobby);
-        // console.log("Room:", this.room);
-        // console.log("Begin:", this.begin);
+    emitStateChange(newState: string, oldState: string): void {
+        mEmitter.instance.emit(EventKey.GAME.STATE_CHANGED, newState, oldState);
     }
 
     registerEvents(): void {
         this.eventHandlers = {
-            [EventKey.SCENE.LOAD_BEGIN]: this.onLoadBegin.bind(this),
             [EventKey.SCENE.LOAD_LOBBY]: this.onLoadLobby.bind(this),
             [EventKey.SCENE.LOAD_ROOM]: this.onLoadRoom.bind(this),
+            [EventKey.GAME.REQUEST_EXIT]: this.onRequestExit.bind(this)
+
         };
 
-        for (const key in this.eventHandlers) {
-            mEmitter.instance.on(key, this.eventHandlers[key], this);
+        for (const event in this.eventHandlers) {
+            mEmitter.instance.on(event, this.eventHandlers[event]);
         }
     }
 
     unregisterEvents(): void {
         if (!this.eventHandlers) return;
 
-        for (const key in this.eventHandlers) {
-            mEmitter.instance.off(key, this.eventHandlers[key], this);
+        for (const event in this.eventHandlers) {
+            mEmitter.instance.off(event, this.eventHandlers[event]);
         }
 
         this.eventHandlers = null;
     }
 
-    onLoadBegin(): void {
-        if (this.fsm.is(FSM_STATES.BEGIN)) return;
-        this.fsm.enterBegin();
+    addSingletonToList(): void {
+        this.singletonList.push(mEmitter);
+    }
+    cleanupSingletonList() {
+        for (let i = this.singletonList.length - 1; i >= 0; i--) {
+            if (this.singletonList[i]?.destroy) {
+                this.singletonList[i].destroy();
+            }
+        }
+        this.singletonList = [];
     }
 
     onLoadLobby(): void {
@@ -139,14 +130,50 @@ export class GameController extends Component {
         this.fsm.enterRoom();
     }
 
-    onDestroy(): void {
-        this.unregisterEvents();
+    onRequestExit(): void {
+        this.fsm.requestExit();
     }
 
-    setActiveRecursive(node: Node, active: boolean) {
-        node.active = active;
-        node.children.forEach(child => {
-            this.setActiveRecursive(child, active);
+    loadSceneInternal(sceneName: string): void {
+        if (this.isSceneLoading) return;
+
+        if (director.getScene()?.name === sceneName) return;
+
+        if (sceneName === 'Room' && !this.roomInitLoad) {
+            this.roomInitLoad = true;
+            return;
+        }
+
+        if (sceneName === 'Lobby' && !this.lobbyInitLoad) {
+            this.lobbyInitLoad = true;
+            return;
+        }
+
+        this.isSceneLoading = true;
+
+        director.preloadScene(
+            sceneName,
+            (completed, total) => {
+                console.log(`Preloading ${sceneName}: ${completed}/${total}`);
+
+            },
+            () => {
+                director.loadScene(sceneName);
+            }
+        );
+    }
+
+    executeExitSteps() {
+        this.cleanupSingletonList();
+        this.unregisterEvents();
+
+        director.preloadScene('Portal', () => {
+            director.loadScene('Portal');
+
+            GameController.instance = null;
+
+            game.removePersistRootNode(this.node);
+            this.node.destroy();
         });
     }
 
