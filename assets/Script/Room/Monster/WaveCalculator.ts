@@ -2,7 +2,7 @@ import { gameConfig } from '../../Util/GameConfig';
 type MonsterProbabilities = {
     DOG?: number;
     WOLF?: number;
-    DRAGON?: number;
+    BOSS?: number;
 };
 
 type MonsterTypeCounts = {
@@ -20,25 +20,25 @@ export const WaveCalculator = {
 
         let dogProb = Math.max(0.4, 0.8 - (level * 0.008));
         let wolfProb = Math.min(0.4, 0.15 + (level * 0.005));
-        let dragonProb = 0;
+        let bossProb = 0;
 
         if (level >= 10) {
-            dragonProb = Math.min(0.2, (level - 10) * 0.004 + 0.05);
+            bossProb = Math.min(0.2, (level - 10) * 0.004 + 0.05);
 
             const totalOthers = dogProb + wolfProb;
-            const adjustment = dragonProb / totalOthers;
+            const adjustment = bossProb / totalOthers;
 
             dogProb *= (1 - adjustment);
             wolfProb *= (1 - adjustment);
         }
 
-        const total = dogProb + wolfProb + dragonProb;
+        const total = dogProb + wolfProb + bossProb;
 
         probabilities.DOG = dogProb / total;
         probabilities.WOLF = wolfProb / total;
 
         if (level >= 10) {
-            probabilities.DRAGON = dragonProb / total;
+            probabilities.BOSS = bossProb / total;
         }
 
         return probabilities;

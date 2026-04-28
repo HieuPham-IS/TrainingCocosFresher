@@ -8,6 +8,9 @@ export const EventKey = {
     },
     PLAYER: {
         SHOOT_NORMAL: 'SHOOT_NORMAL',
+        ON_HIT: 'ON_HIT',
+        ON_DIE: 'PLAYER_ON_DIE',
+        READY: 'PLAYER_READY',
     },
 
     MONSTER: {

@@ -27,12 +27,17 @@
       {
         "index": 2,
         "name": "monster"
+      },
+      {
+        "index": 3,
+        "name": "player"
       }
     ],
     "collisionMatrix": {
       "0": 1,
       "1": 4,
-      "2": 2
+      "2": 10,
+      "3": 4
     }
   }
 }

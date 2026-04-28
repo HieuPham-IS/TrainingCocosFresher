@@ -7,15 +7,16 @@ const { ccclass, property } = _decorator;
 @ccclass('Monster')
 export class Monster extends MonsterItem {
     onMove() {
+        const randomSpeedFactor = 0.9 + Math.random() * 0.2;
+        const adjustedDuration = 2 * randomSpeedFactor;
+
         this.moveTween = tween(this.node)
             .repeatForever(
                 tween()
-                    .sequence(
-                        tween().by(2, { position: new Vec3(-100, 0, 0) }),
-                        tween().by(2, { position: new Vec3(-100, 0, 0) })
-                    )
+                    .by(adjustedDuration, { position: new Vec3(-100, 0, 0) })
             )
             .start();
+
     }
 
     onDie() {
@@ -31,7 +32,7 @@ export class Monster extends MonsterItem {
         let opacity = this.node.getComponent(UIOpacity);
 
         this.dieTween = tween(opacity)
-            .to(0.8, { opacity: 0 })
+            .to(0.1, { opacity: 0 })
             .call(() => {
                 this.node.destroy();
             })

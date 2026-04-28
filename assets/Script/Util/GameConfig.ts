@@ -1,8 +1,19 @@
 export const gameConfig = {
+    PLAYER: {
+        HP_BASE: 150,
+        POSITION: {
+
+            INIT: {
+                X: -450,
+                Y: -100,
+            }
+
+        }
+    },
     MONSTER: {
         INIT_LOCATION: {
             X: 1560,
-            Y: [700, 500, 1000],
+            Y: [700, 900, 1000],
         },
         WAVE_COUNT: 10,
         HP_BASE: 100,
@@ -14,7 +25,6 @@ export const gameConfig = {
                 COEFFICIENT_HP: 10,
                 COEFFICIENT_DAMAGE: 4,
                 DURATION_MOVE: 10,
-                COEFFICIENT_GOLD: 30,
             },
 
             WOLF: {
@@ -22,14 +32,12 @@ export const gameConfig = {
                 COEFFICIENT_HP: 1,
                 COEFFICIENT_DAMAGE: 1,
                 DURATION_MOVE: 10,
-                COEFFICIENT_GOLD: 1,
             },
             DOG: {
                 NAME: "DOG",
                 COEFFICIENT_HP: 2,
                 COEFFICIENT_DAMAGE: 1.5,
                 DURATION_MOVE: 8,
-                COEFFICIENT_GOLD: 3,
             },
         }
     },
@@ -38,7 +46,7 @@ export const gameConfig = {
         TYPE: {
             NORMAL: {
                 NAME: "NORMAL",
-                DAMAGE: 10,
+                DAMAGE: 50,
                 SPEED: 1000,
                 DURATION_MOVE: 1.2
             }

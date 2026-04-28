@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Prefab, instantiate, Vec3, PhysicsSystem2D } from 'cc';
+import { _decorator, Component, Prefab, instantiate, Vec3, PhysicsSystem2D, log } from 'cc';
 const { ccclass, property } = _decorator;
 import { mEmitter } from '../../Util/Event/mEmitter';
 import { gameConfig } from '../../Util/GameConfig'
@@ -50,6 +50,7 @@ export class MonsterManager extends Component {
 
     onStartWave(data: any) {
         console.log('START WAVE', data);
+        this.unscheduleAllCallbacks();
         this.resetWaveState(data);
         this.spawnNextMonster(data);
     }
@@ -81,9 +82,12 @@ export class MonsterManager extends Component {
 
     scheduleNextSpawn(waveData: any) {
         if (this.spawnedCount < waveData.totalMonsters && !this.isGameOver) {
+
+            const randomDelay = waveData.spawnInterval * (0.8 + Math.random() * 0.4);
+
             this.scheduleOnce(() => {
                 this.spawnNextMonster(waveData);
-            }, waveData.spawnInterval);
+            }, randomDelay);
         }
     }
 
@@ -111,7 +115,7 @@ export class MonsterManager extends Component {
 
     spawnMonster(type: any, level: number) {
         const monsterConfig = this.createMonsterConfig(type, level);
-        console.log(`Spawn Monster at World Pos: ${monsterConfig.position}`);
+        // console.log(`Spawn Monster at World Pos: ${monsterConfig.position}`);
         const monster = this.instantiateMonster(monsterConfig);
         this.setupMonster(monster, monsterConfig);
     }
@@ -189,9 +193,12 @@ export class MonsterManager extends Component {
     }
 
     genInitPosition() {
-        const x = gameConfig.MONSTER.INIT_LOCATION.X;
+        const x = gameConfig.MONSTER.INIT_LOCATION.X + (Math.random() * 40 - 20);
         const listY = gameConfig.MONSTER.INIT_LOCATION.Y;
-        const y = listY[Math.floor(Math.random() * listY.length)];
+        const baseY = listY[Math.floor(Math.random() * listY.length)];
+
+
+        const y = baseY + (Math.random() * 100 - 50);
 
         return new Vec3(x, y, 0);
     }
@@ -221,9 +228,8 @@ export class MonsterManager extends Component {
     }
 
     takeDamage(monster: any, bullet: any) {
-        console.log(`[Hit] Current HP: ${monster.hp}, Damage: ${bullet.damage}`);
+        if (!monster || monster.hp <= 0) return;
         this.applyDamage(monster, bullet);
-        console.log(`[Hit] HP after damage: ${monster.hp}`);
         monster.updateHP();
         this.handleMonsterDeath(monster);
     }

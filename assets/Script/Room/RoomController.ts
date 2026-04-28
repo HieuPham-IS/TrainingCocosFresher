@@ -29,25 +29,12 @@ export class RoomController extends Component {
     private eventHandles: Record<string, (...args: any[]) => void> | null = null;
 
     onLoad() {
-        this.initCollisionManager();
         this.registerEvent();
         this.initGame();
     }
 
     onDestroy() {
         this.unregisterEvent();
-    }
-
-    private initCollisionManager() {
-        const physics = PhysicsSystem2D.instance;
-
-        physics.enable = true;
-
-        // debug (optional)
-        physics.debugDrawFlags =
-            EPhysics2DDrawFlags.Aabb |
-            EPhysics2DDrawFlags.Pair |
-            EPhysics2DDrawFlags.CenterOfMass;
     }
 
     private registerEvent() {
@@ -115,7 +102,6 @@ export class RoomController extends Component {
     }
 
     private setNodePosition(targetNode: Node, worldPos: Vec3) {
-        // Sử dụng UITransform để chuyển đổi tọa độ trong 3.x
         const uiTransform = this.node.getComponent(UITransform);
         if (uiTransform) {
             const localPos = uiTransform.convertToNodeSpaceAR(worldPos);
@@ -124,7 +110,6 @@ export class RoomController extends Component {
     }
 
     private startGame() {
-        // Đồng bộ Key với WaveController đã sửa ở lượt trước
         mEmitter.instance.emit(EventKey.WAVE.START_WAVE, this.waveCurrent);
     }
 

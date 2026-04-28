@@ -1,4 +1,4 @@
-import { _decorator, Component, log, math, Node, sp, tween, Vec3, Camera, view } from 'cc';
+import { _decorator, Component, log, math, Node, sp, tween, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 import { mEmitter } from '../../Util/Event/mEmitter';
 import { EventKey } from '../../Util/Event/EventKey';
@@ -7,9 +7,6 @@ import { EventKey } from '../../Util/Event/EventKey';
 export class CharacterController extends Component {
     @property(Node)
     muzzleNode: Node | null = null;
-
-    @property(Camera)
-    camera: Camera | null = null;
 
     private halfW: number = 0;
     private halfH: number = 0;
@@ -23,7 +20,7 @@ export class CharacterController extends Component {
 
     onLoad(): void {
         this.spine = this.getComponent(sp.Skeleton) || this.getComponentInChildren(sp.Skeleton);
-        console.log(this.spine);
+        // console.log(this.spine);
         this.registerListenerEvent();
         this.updateAnimation();
         this.updateCameraBounds();
@@ -72,13 +69,10 @@ export class CharacterController extends Component {
     }
 
     updateCameraBounds() {
-        if (!this.camera) return;
-
-        const visibleSize = view.getVisibleSize();
-
-        this.halfW = visibleSize.width / 6;
-        this.halfH = visibleSize.height / 5.8;
+        this.halfW = 1560 / 3;
+        this.halfH = 720 / 3;
     }
+
     moveBy(dx: number, dy: number): void {
         const pos = this.node.position.clone();
 
@@ -121,4 +115,3 @@ export class CharacterController extends Component {
         }
     }
 }
-

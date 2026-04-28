@@ -35,7 +35,9 @@ export class MonsterItem extends Component {
     protected isDying: boolean = false;
 
     update(deltaTime: number) {
-
+        if (!this.isDying && this.hp < this.maxHp) {
+            this.updateHP();
+        }
     }
 
     init(data: any) {
@@ -58,13 +60,10 @@ export class MonsterItem extends Component {
 
     }
 
-    shouldDie() {
-        return this.hp <= 0;
-    }
-
     updateHP() {
         this.updateHPBar();
-        if (this.shouldDie()) {
+        if (this.hp <= 0) {
+
             mEmitter.instance.emit(EventKey.MONSTER.ON_DIE, this);
         }
     }
