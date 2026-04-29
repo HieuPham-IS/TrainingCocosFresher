@@ -60,7 +60,7 @@ export class MonsterManager extends Component {
     }
 
     onStartWave(data: any) {
-        console.log('START WAVE', data);
+        // console.log('START WAVE', data);
         this.unscheduleAllCallbacks();
         this.resetWaveState(data);
         this.spawnNextMonster(data);
@@ -74,7 +74,7 @@ export class MonsterManager extends Component {
     }
 
     spawnNextMonster(waveData: any) {
-        console.log('SPAWN', this.spawnedCount);
+        // console.log('SPAWN', this.spawnedCount);
         if (this.shouldStopSpawning(waveData)) return;
 
         const monsterType = this.selectMonsterTypeForSpawn(waveData);
@@ -147,7 +147,7 @@ export class MonsterManager extends Component {
             spriteFrame: this.getSpriteFrameByType(type.NAME)
         };
 
-        console.log("Monster Config:", config);
+        // console.log("Monster Config:", config);
 
         return config;
     }
@@ -184,7 +184,7 @@ export class MonsterManager extends Component {
         const localPos = new Vec3();
         this.node.inverseTransformPoint(localPos, worldPos);
         monster.setPosition(localPos);
-        console.log('world in:', worldPos, '→ local set:', localPos, '→ world after:', monster.worldPosition);
+        // console.log('world in:', worldPos, '→ local set:', localPos, '→ world after:', monster.worldPosition);
     }
 
     calculateBaseStats(level: number) {

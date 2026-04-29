@@ -39,9 +39,8 @@ export class RoomController extends Component {
 
     private registerEvent() {
         this.eventHandles = {
-
+            [EventKey.PLAYER.ON_DIE]: this.gameOver.bind(this),
             [EventKey.WAVE.WAVE_COMPLETE]: this.summaryWave.bind(this),
-            [EventKey.ROOM.SUMMARY_GAME]: this.summaryGame.bind(this),
             [EventKey.ROOM.EXIT]: this.onExitRoom.bind(this),
         };
 
@@ -72,7 +71,7 @@ export class RoomController extends Component {
     }
 
     private playBackgroundMusic() {
-        // mEmitter.instance.emit(EventKey.SOUND.PLAY_BGM, AudioName.BGM.ROOM);
+        mEmitter.instance.emit(EventKey.SOUND.PLAY_BGM, "bgm");
     }
 
     private initTitleWave() {
@@ -159,28 +158,9 @@ export class RoomController extends Component {
         this.startGame();
     }
 
-    private summaryGame(sumGold: any, sumMonsterKill: any) {
-        this.updateGameStats(sumGold, sumMonsterKill);
-        this.handleGameSummary();
-    }
-
-    private updateGameStats(sumGold: any, sumMonsterKill: any) {
-        this.sumGold = parseInt(sumGold) || 0;
-        this.sumMonsterKill = parseInt(sumMonsterKill) || 0;
-        this.score = this.calculateScore();
-    }
-
-    private handleGameSummary() {
-        mEmitter.instance.emit(EventKey.ROOM.UPDATE_RESULT, this.score, this.sumGold);
-        // mEmitter.instance.emit(EventKey.POPUP.SHOW, PopupName.RESULT);
-
-        // GoldController.addGold(this.sumGold);
-    }
-
-    private calculateScore(): number {
-        const scoreKill = this.sumMonsterKill * gameConfig.ROOM.SUMMARY_GAME.SCORE_ONE_KILL;
-        const scoreWave = this.waveCurrent * gameConfig.ROOM.SUMMARY_GAME.SCORE_ONE_WAVE;
-        return scoreKill + scoreWave;
+    public onPressPause() {
+        mEmitter.instance.emit(EventKey.SOUND.PLAY_SFX, "click");
+        mEmitter.instance.emit(EventKey.POPUP.SHOW, "PAUSE");
     }
 
     private onExitRoom() {

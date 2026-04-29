@@ -41,7 +41,7 @@ export class GameController extends Component {
         }
 
         GameController.instance = this;
-        game.addPersistRootNode(this.node);
+        director.addPersistRootNode(this.node);
 
         this.isSceneLoading = false;
 
