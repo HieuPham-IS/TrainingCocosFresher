@@ -37,6 +37,9 @@ export class MonsterManager extends Component {
     private totalMonsters: number = 0;
     private eventHandles: Record<string, (...args: any[]) => void> | null = null;
 
+    private recentlyUsedLanes: number[] = [];
+    private readonly LANE_COOLDOWN = 2;
+
     onLoad() {
         PhysicsSystem2D.instance.enable = true;
         console.log('MonsterManager loaded');
@@ -59,6 +62,7 @@ export class MonsterManager extends Component {
         this.spawnedCount = 0;
         this.currentWaveData = data;
         this.totalMonsters = data.totalMonsters;
+        this.recentlyUsedLanes = []
     }
 
     spawnNextMonster(waveData: any) {
@@ -168,9 +172,11 @@ export class MonsterManager extends Component {
     setMonsterPosition(monster: any, worldPos: any) {
         // const localPos = this.node.inverseTransformPoint(new Vec3(), worldPos);
         // monster.setPosition(localPos);
+
         const localPos = new Vec3();
         this.node.inverseTransformPoint(localPos, worldPos);
         monster.setPosition(localPos);
+        console.log('world in:', worldPos, '→ local set:', localPos, '→ world after:', monster.worldPosition);
     }
 
     calculateBaseStats(level: number) {
@@ -193,14 +199,19 @@ export class MonsterManager extends Component {
     }
 
     genInitPosition() {
-        const x = gameConfig.MONSTER.INIT_LOCATION.X + (Math.random() * 40 - 20);
-        const listY = gameConfig.MONSTER.INIT_LOCATION.Y;
-        const baseY = listY[Math.floor(Math.random() * listY.length)];
+        const lanes = gameConfig.MONSTER.INIT_LOCATION.Y;
+        const usedSet = new Set(this.recentlyUsedLanes);
+        const availableLanes = lanes.filter(lane => !usedSet.has(lane));
+        const lanePool = availableLanes.length > 0 ? availableLanes : [lanes[0]];
+        const selectedLane = lanePool[Math.floor(Math.random() * lanePool.length)];
 
+        this.recentlyUsedLanes.push(selectedLane);
+        if (this.recentlyUsedLanes.length > this.LANE_COOLDOWN) {
+            this.recentlyUsedLanes.shift();
+        }
 
-        const y = baseY + (Math.random() * 100 - 50);
-
-        return new Vec3(x, y, 0);
+        const y = selectedLane + (Math.random() * 30 - 15);
+        return new Vec3(gameConfig.MONSTER.INIT_LOCATION.X, y, 0);
     }
 
     getSpriteFrameByType(type: string) {
