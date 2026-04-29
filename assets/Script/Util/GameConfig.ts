@@ -13,7 +13,7 @@ export const gameConfig = {
     MONSTER: {
         INIT_LOCATION: {
             X: 1560,
-            Y: [150, 310, 470, 620],
+            Y: [100, 250, 400, 550],
         },
         WAVE_COUNT: 10,
         HP_BASE: 100,

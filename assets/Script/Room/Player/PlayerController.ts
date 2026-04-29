@@ -1,117 +1,68 @@
-import { _decorator, Component, log, math, Node, sp, tween, Vec3 } from 'cc';
+import { _decorator, Component, Node, Prefab, instantiate } from 'cc';
 const { ccclass, property } = _decorator;
 import { mEmitter } from '../../Util/Event/mEmitter';
 import { EventKey } from '../../Util/Event/EventKey';
+import { Player } from './Player';
 
-@ccclass('CharacterController')
-export class CharacterController extends Component {
-    @property(Node)
-    muzzleNode: Node | null = null;
+@ccclass('PlayerController')
+export class PlayerController extends Component {
+    @property({ type: Prefab }) playerPrefab: Prefab | null = null;
 
-    private halfW: number = 0;
-    private halfH: number = 0;
-
-
-    private spine: sp.Skeleton | null = null;
-    private isMoving: boolean = false;
-    private currentAnim: string = '';
-    private lastMoveTime: number = 0;
-    private eventHandles: Record<string, (...args: any[]) => void> | null = null;
+    private playerNode: Node | null = null;
+    private playerScript: Player | null = null;
+    private playerIndex: number = 0;
+    private eventHandlers: Record<string, (...args: any[]) => void> | null = null;
 
     onLoad(): void {
-        this.spine = this.getComponent(sp.Skeleton) || this.getComponentInChildren(sp.Skeleton);
-        // console.log(this.spine);
-        this.registerListenerEvent();
-        this.updateAnimation();
-        this.updateCameraBounds();
-
+        this.init();
     }
 
-    update(deltaTime: number) {
-        if (this.isMoving && Date.now() - this.lastMoveTime > 100) {
-            this.isMoving = false;
-            this.updateAnimation();
+    init(): void {
+        this.registerEventListener();
+        this.createPlayer();
+    }
+
+    createPlayer(): void {
+        if (!this.playerPrefab) return;
+
+        this.playerNode = instantiate(this.playerPrefab);
+        this.node.addChild(this.playerNode);
+
+        this.playerScript = this.playerNode.getComponent(Player);
+
+        this.playerIndex += 1;
+        if (this.playerScript) {
+            this.playerScript.node.name = `Player${this.playerIndex}`;
         }
+    }
+
+    registerEventListener(): void {
+        this.eventHandlers = {
+            [EventKey.INPUT.MOVE_UP]: this.onMoveUp.bind(this),
+            [EventKey.INPUT.MOVE_DOWN]: this.onMoveDown.bind(this),
+        };
+
+        for (const event in this.eventHandlers) {
+            mEmitter.instance.on(event, this.eventHandlers[event], this);
+        }
+    }
+
+
+    onMoveUp(): void {
+        if (!this.playerScript?.fsm.can('toMoveUp')) return;
+        this.playerScript.fsm.toMoveUp();
+    }
+
+    onMoveDown(): void {
+        if (!this.playerScript?.fsm.can('toMoveDown')) return;
+        this.playerScript.fsm.toMoveDown();
     }
 
     onDestroy(): void {
-        this.unregisterListenerEvent();
-    }
-
-    registerListenerEvent(): void {
-        this.eventHandles = {
-            [EventKey.INPUT.MOVE_UP]: this.onMove.bind(this, 0, 50),
-            [EventKey.INPUT.MOVE_DOWN]: this.onMove.bind(this, 0, -50),
-            [EventKey.INPUT.SHOOT]: this.onShoot.bind(this)
-        };
-
-        for (const event in this.eventHandles) {
-            mEmitter.instance.on(event, this.eventHandles[event], this);
+        if (!this.eventHandlers) return;
+        for (const event in this.eventHandlers) {
+            mEmitter.instance.off(event, this.eventHandlers[event], this);
         }
-    }
-
-    unregisterListenerEvent(): void {
-        if (!this.eventHandles) return;
-
-        for (const event in this.eventHandles) {
-            mEmitter.instance.off(event, this.eventHandles[event], this);
-        }
-
-        this.eventHandles = null;
-
-    }
-
-    onMove(dx: number, dy: number): void {
-        this.moveBy(dx, dy);
-        this.isMoving = true;
-        this.lastMoveTime = Date.now();
-        this.updateAnimation();
-    }
-
-    updateCameraBounds() {
-        this.halfW = 1560 / 3;
-        this.halfH = 720 / 3;
-    }
-
-    moveBy(dx: number, dy: number): void {
-        const pos = this.node.position.clone();
-
-        pos.x += dx;
-        pos.y += dy;
-
-        pos.x = Math.max(-this.halfW, Math.min(this.halfW, pos.x));
-        pos.y = Math.max(-this.halfH, Math.min(this.halfH, pos.y));
-
-        this.node.setPosition(pos);
-    }
-
-    onShoot(): void {
-        const muzzle = this.muzzleNode || this.node;
-        const worldPos = muzzle.worldPosition.clone();
-
-        mEmitter.instance.emit(EventKey.PLAYER.SHOOT_NORMAL, worldPos);
-
-        if (this.spine) {
-            this.spine.setAnimation(1, "shoot", false);
-            this.spine.addAnimation(0, this.isMoving ? "run" : "idle", true);
-        }
-    }
-
-    playAnimation(name: string, loop: boolean): void {
-        if (!this.spine) return;
-        if (this.currentAnim === name) return;
-
-        this.currentAnim = name;
-        this.spine.setAnimation(0, name, loop);
-    }
-
-    updateAnimation(): void {
-        if (!this.spine) return;
-
-        if (this.isMoving) {
-            this.playAnimation("run", true);
-        } else {
-            this.playAnimation("idle", true);
-        }
+        this.eventHandlers = null;
     }
 }

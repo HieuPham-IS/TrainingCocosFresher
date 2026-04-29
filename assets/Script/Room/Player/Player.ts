@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, ProgressBar, sp, tween, Vec3, UIOpacity, Collider2D, Contact2DType, IPhysics2DContact } from 'cc';
+import { _decorator, Component, Node, ProgressBar, sp, tween, Vec3, UIOpacity, Collider2D, Contact2DType, IPhysics2DContact, RigidBody2D, ERigidBody2DType } from 'cc';
 import StateMachine from 'javascript-state-machine';
 import { mEmitter } from '../../Util/Event/mEmitter';
 import { EventKey } from '../../Util/Event/EventKey';
@@ -16,34 +16,51 @@ enum FSM_STATE {
 
 @ccclass('Player')
 export class Player extends Component {
-    @property({ type: ProgressBar }) hpProgressBar: ProgressBar | null = null;
-    @property({ type: Node }) bulletPointer: Node | null = null;
-    @property maxHP: number = 100;
-    @property moveDuration: number = 0.2;
+    @property({ type: ProgressBar })
+    hpProgressBar: ProgressBar | null = null;
 
-    private spawnX: number = -600;
-    private playerPositionY: number[] = [-300, -175, -50];
-    private currentLaneIndex: number = 1;
+    @property({ type: Node })
+    bulletPointer: Node | null = null;
+
+    @property
+    maxHP: number = 100;
+
+    @property
+    moveDuration: number = 0.1;
+
+    @property
+    xInit: number = -420;
+
+    @property
+    yInit: number = -100;
+
+    private playerPositionY: number[] = [-450, -200, 250];
+
     public currentHP: number = 0;
     public fsm: any = null;
+    public pendingMove: 'up' | 'down' | null = null;
     private playerSpine: sp.Skeleton | null = null;
 
     onLoad() {
-        this.playerSpine = this.getComponent(sp.Skeleton);
+        this.init();
+    }
+
+    init() {
+        this.playerSpine = this.getComponent(sp.Skeleton)
+            ?? this.getComponentInChildren(sp.Skeleton);
+
         this.currentHP = this.maxHP;
         if (this.hpProgressBar) this.hpProgressBar.progress = 1;
 
-        this.initStateMachine();
+        this.node.setPosition(this.xInit, this.yInit, 0);
 
-        this.node.setPosition(new Vec3(this.spawnX, this.playerPositionY[this.currentLaneIndex], 0));
+        this.initStateMachine();
 
         const collider = this.getComponent(Collider2D);
         if (collider) {
             collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
         }
 
-        mEmitter.instance.on(EventKey.INPUT.MOVE_UP, this.onMoveUpRequest, this);
-        mEmitter.instance.on(EventKey.INPUT.MOVE_DOWN, this.onMoveDownRequest, this);
         mEmitter.instance.on(EventKey.INPUT.SHOOT, this.onShootRequest, this);
     }
 
@@ -67,28 +84,44 @@ export class Player extends Component {
             ],
             methods: {
                 onEnterPortal: () => this.handleEnterPortal(),
-                onEnterMoveUp: () => this.handleMoveUp(),
-                onEnterMoveDown: () => this.handleMoveDown(),
+                onEnterShoot: () => this.handleEnterShoot(),
+                onEnterMoveUp: () => this.handleEnterMoveUp(),
+                onEnterMoveDown: () => this.handleEnterMoveDown(),
                 onEnterDie: () => this.handleEnterDie(),
+                onLeavePortal: () => this.playerSpine?.setCompleteListener(null),
             },
         });
     }
 
     handleEnterPortal() {
-        if (!this.playerSpine) return;
-        this.playerSpine.setCompleteListener((entry) => {
-            if (entry.animation.name === 'portal') {
-                this.playerSpine.setAnimation(0, 'idle', true);
-                mEmitter.instance.emit(EventKey.PLAYER.READY);
-                this.safeToShoot();
-            }
-        });
+        if (!this.playerSpine) {
+            mEmitter.instance.emit(EventKey.PLAYER.READY);
+            this.fsm.toShoot();
+            return;
+        }
         this.playerSpine.setAnimation(0, 'portal', false);
+        this.playerSpine.setCompleteListener(() => {
+            this.playerSpine!.setAnimation(0, 'idle', true);
+            this.playerSpine!.setCompleteListener(null);
+            mEmitter.instance.emit(EventKey.PLAYER.READY);
+            this.fsm.toShoot();
+        });
     }
 
-    onShootRequest() { if (this.fsm.is(FSM_STATE.SHOOT)) this.onShootBullet(); }
-    onMoveUpRequest() { if (this.fsm.can('toMoveUp')) this.fsm.toMoveUp(); }
-    onMoveDownRequest() { if (this.fsm.can('toMoveDown')) this.fsm.toMoveDown(); }
+    handleEnterShoot() {
+        if (!this.pendingMove) return;
+        const move = this.pendingMove;
+        this.pendingMove = null;
+        this.scheduleOnce(() => {
+            if (move === 'up' && this.fsm.can('toMoveUp')) this.fsm.toMoveUp();
+            else if (move === 'down' && this.fsm.can('toMoveDown')) this.fsm.toMoveDown();
+        }, 0);
+    }
+
+    onShootRequest() {
+        if (!this.fsm.is(FSM_STATE.SHOOT)) return;
+        this.onShootBullet();
+    }
 
     onShootBullet() {
         this.playerSpine?.setAnimation(1, 'shoot', false);
@@ -97,74 +130,87 @@ export class Player extends Component {
         }
     }
 
-    private handleMoveUp() {
-        if (this.currentLaneIndex < 2) {
-            this.currentLaneIndex++;
-            this.performMove();
-        } else { this.safeToShoot(); }
-    }
+    handleEnterMoveUp() {
+        const currentY = this.node.position.y;
+        let targetY = currentY;
 
-    private handleMoveDown() {
-        if (this.currentLaneIndex > 0) {
-            this.currentLaneIndex--;
-            this.performMove();
-        } else { this.safeToShoot(); }
-    }
+        if (currentY === this.playerPositionY[0]) {
+            targetY = this.playerPositionY[1];
+        } else if (currentY === this.playerPositionY[1]) {
+            targetY = this.playerPositionY[2];
+        }
 
-    private performMove() {
+        if (targetY === currentY) { this.scheduleOnce(() => { if (this.fsm.can('toShoot')) this.fsm.toShoot(); }, 0); return; }
+
         tween(this.node)
-            .to(this.moveDuration, { position: new Vec3(this.spawnX, this.playerPositionY[this.currentLaneIndex], 0) })
-            .call(() => this.safeToShoot()).start();
+            .to(this.moveDuration, { position: new Vec3(this.node.position.x, targetY, 0) })
+            .call(() => this.scheduleOnce(() => { if (this.fsm.can('toShoot')) this.fsm.toShoot(); }, 0))
+            .start();
     }
 
-    private safeToShoot() {
-        this.scheduleOnce(() => { if (this.fsm.can('toShoot')) this.fsm.toShoot(); }, 0);
+    handleEnterMoveDown() {
+        const currentY = this.node.position.y;
+        let targetY = currentY;
+
+        if (currentY === this.playerPositionY[2]) {
+            targetY = this.playerPositionY[1];
+        } else if (currentY === this.playerPositionY[1]) {
+            targetY = this.playerPositionY[0];
+        }
+
+        if (targetY === currentY) { this.scheduleOnce(() => { if (this.fsm.can('toShoot')) this.fsm.toShoot(); }, 0); return; }
+
+        tween(this.node)
+            .to(this.moveDuration, { position: new Vec3(this.node.position.x, targetY, 0) })
+            .call(() => this.scheduleOnce(() => { if (this.fsm.can('toShoot')) this.fsm.toShoot(); }, 0))
+            .start();
     }
 
     takeDamage(amount: number) {
         if (this.fsm.is(FSM_STATE.DIE)) return;
         this.currentHP -= amount;
+        if (this.currentHP < 0) this.currentHP = 0;
         if (this.hpProgressBar) this.hpProgressBar.progress = this.currentHP / this.maxHP;
+
         if (this.currentHP <= 0) {
             this.fsm.toDie();
         } else {
             const opac = this.getComponent(UIOpacity);
-            if (opac) tween(opac).to(0.1, { opacity: 100 }).to(0.1, { opacity: 255 }).start();
+            if (opac) {
+                tween(opac)
+                    .to(0.1, { opacity: 80 })
+                    .to(0.1, { opacity: 255 })
+                    .to(0.1, { opacity: 80 })
+                    .to(0.1, { opacity: 255 })
+                    .start();
+            }
         }
     }
 
     handleEnterDie() {
         mEmitter.instance.emit(EventKey.ROOM.GAME_OVER);
+        this.pendingMove = null;
+
         const collider = this.getComponent(Collider2D);
         if (collider) collider.enabled = false;
 
         if (this.playerSpine) {
-            this.playerSpine.setCompleteListener((entry) => {
-                if (entry.animation.name === 'death') {
-                    this.startFadeOut();
-                }
-            });
             this.playerSpine.setAnimation(0, 'death', false);
+            this.playerSpine.setCompleteListener(() => {
+                mEmitter.instance.emit(EventKey.PLAYER.ON_DIE, this.node.name);
+                this.playerSpine!.setCompleteListener(null);
+                if (this.node.parent) this.node.parent.destroy();
+                else this.node.destroy();
+            });
         } else {
-            this.startFadeOut();
+            mEmitter.instance.emit(EventKey.PLAYER.ON_DIE, this.node.name);
+            if (this.node.parent) this.node.parent.destroy();
+            else this.node.destroy();
         }
     }
 
-    private startFadeOut() {
-        let opacity = this.getComponent(UIOpacity);
-        if (!opacity) opacity = this.node.addComponent(UIOpacity);
-        tween(opacity)
-            .to(0.8, { opacity: 0 })
-            .call(() => {
-                mEmitter.instance.emit(EventKey.PLAYER.ON_DIE, this.node.name);
-                if (this.node.parent) this.node.parent.destroy();
-                else this.node.destroy();
-            }).start();
-    }
-
     onDestroy() {
-        mEmitter.instance.off(EventKey.INPUT.MOVE_UP, this.onMoveUpRequest, this);
-        mEmitter.instance.off(EventKey.INPUT.MOVE_DOWN, this.onMoveDownRequest, this);
         mEmitter.instance.off(EventKey.INPUT.SHOOT, this.onShootRequest, this);
+        if (this.playerSpine) this.playerSpine.setCompleteListener(null);
     }
 }

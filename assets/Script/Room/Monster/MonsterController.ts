@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Prefab, instantiate, Vec3, PhysicsSystem2D, log } from 'cc';
+import { _decorator, Component, Prefab, instantiate, Vec3, PhysicsSystem2D, log, EPhysics2DDrawFlags } from 'cc';
 const { ccclass, property } = _decorator;
 import { mEmitter } from '../../Util/Event/mEmitter';
 import { gameConfig } from '../../Util/GameConfig'
@@ -42,6 +42,14 @@ export class MonsterManager extends Component {
 
     onLoad() {
         PhysicsSystem2D.instance.enable = true;
+        // PhysicsSystem2D.instance.debugDrawFlags =
+        //     EPhysics2DDrawFlags.Aabb |
+        //     EPhysics2DDrawFlags.Pair |
+        //     EPhysics2DDrawFlags.CenterOfMass |
+        //     EPhysics2DDrawFlags.Joint |
+        //     EPhysics2DDrawFlags.Shape;
+
+
         console.log('MonsterManager loaded');
         this.clearEditorMonsters();
         this.registerEvent();
