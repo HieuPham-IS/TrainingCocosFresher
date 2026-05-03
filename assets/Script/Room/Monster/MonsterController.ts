@@ -122,7 +122,7 @@ export class MonsterManager extends Component {
 
     shouldSpawnBoss(waveData: any) {
         const level = waveData.level;
-        return level % 2 === 0 && this.spawnedCount === waveData.totalMonsters - 5;
+        return level % 3 === 0 && this.spawnedCount === waveData.totalMonsters - 5;
     }
 
     spawnMonster(type: any, level: number) {
@@ -137,7 +137,7 @@ export class MonsterManager extends Component {
 
         const config = {
             id: this.generateMonsterId(),
-            type,
+            type: type.NAME,
             position: this.genInitPosition(),
             hp: baseStats.hp * type.COEFFICIENT_HP,
             maxHp: baseStats.hp * type.COEFFICIENT_HP,
@@ -265,6 +265,27 @@ export class MonsterManager extends Component {
 
     updateGameStats(monster: any) {
         this.sumMonsterKill++;
+
+        let gold = 0;
+        let score = 0;
+        let exp = 0;
+        const typeName = monster.type;
+        const types = gameConfig.MONSTER.TYPE as any;
+
+        for (const key in types) {
+            if (types[key].NAME === typeName) {
+                gold = types[key].GOLD || 0;
+                score = types[key].SCORE || 0;
+                exp = types[key].EXP || 0;
+                break;
+            }
+        }
+
+        mEmitter.instance.emit(EventKey.MONSTER.KILLED, {
+            gold,
+            score,
+            exp
+        });
     }
 
     registerEvent() {

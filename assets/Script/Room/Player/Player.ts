@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, ProgressBar, sp, tween, Vec3, UIOpacity, Collider2D, Contact2DType, IPhysics2DContact, RigidBody2D, ERigidBody2DType } from 'cc';
+import { _decorator, Component, Node, ProgressBar, sp, tween, Vec3, UIOpacity, Collider2D, Contact2DType, IPhysics2DContact, Label, sys } from 'cc';
 import StateMachine from 'javascript-state-machine';
 import { mEmitter } from '../../Util/Event/mEmitter';
 import { EventKey } from '../../Util/Event/EventKey';
@@ -21,6 +21,12 @@ export class Player extends Component {
 
     @property({ type: Node })
     bulletPointer: Node | null = null;
+
+    @property({ type: ProgressBar })
+    expProgressBar: ProgressBar | null = null;
+
+    @property({ type: Label })
+    levelLabel: Label | null = null;
 
     @property
     maxHP: number = 100;
@@ -45,6 +51,9 @@ export class Player extends Component {
 
 
     public currentHP: number = 0;
+    public currentLevel: number = 1;
+    public currentExp: number = 0;
+    public damageMultiplier: number = 1;
     public fsm: any = null;
     public pendingMove: 'up' | 'down' | null = null;
     private playerSpine: sp.Skeleton | null = null;
@@ -56,6 +65,12 @@ export class Player extends Component {
     init() {
         this.playerSpine = this.getComponent(sp.Skeleton)
             ?? this.getComponentInChildren(sp.Skeleton);
+
+        this.currentLevel = Number(sys.localStorage.getItem('playerLevel') || 1);
+        this.currentExp = Number(sys.localStorage.getItem('playerExp') || 0);
+
+        this.maxHP = Math.floor(150 * Math.pow(1.15, this.currentLevel - 1));
+        this.damageMultiplier = Math.pow(1.15, this.currentLevel - 1);
 
         this.currentHP = this.maxHP;
         if (this.hpProgressBar) this.hpProgressBar.progress = 1;
@@ -70,6 +85,50 @@ export class Player extends Component {
         }
 
         mEmitter.instance.on(EventKey.INPUT.SHOOT, this.onShootRequest, this);
+        mEmitter.instance.on(EventKey.PLAYER.ADD_EXP, this.onAddExp, this);
+
+        this.updateExpUI();
+    }
+
+    onAddExp(exp: number) {
+        if (this.fsm.is(FSM_STATE.DIE)) return;
+
+        this.currentExp += exp;
+        sys.localStorage.setItem('playerExp', this.currentExp.toString());
+
+        this.checkLevelUp();
+        this.updateExpUI();
+    }
+
+    checkLevelUp() {
+        let maxExp = this.currentLevel * 100;
+        let leveledUp = false;
+
+        while (this.currentExp >= maxExp) {
+            this.currentExp -= maxExp;
+            this.currentLevel++;
+            this.damageMultiplier *= 1.15;
+            this.maxHP *= 1.15;
+            this.currentHP = this.maxHP;
+            if (this.hpProgressBar) this.hpProgressBar.progress = this.currentHP / this.maxHP;
+            maxExp = this.currentLevel * 100;
+            leveledUp = true;
+        }
+
+        if (leveledUp) {
+            sys.localStorage.setItem('playerLevel', this.currentLevel.toString());
+            sys.localStorage.setItem('playerExp', this.currentExp.toString());
+        }
+    }
+
+    updateExpUI() {
+        if (this.expProgressBar) {
+            const maxExp = this.currentLevel * 100;
+            this.expProgressBar.progress = this.currentExp / maxExp;
+        }
+        if (this.levelLabel) {
+            this.levelLabel.string = `LV ${this.currentLevel}`;
+        }
     }
 
     onBeginContact(self: Collider2D, other: Collider2D, contact: IPhysics2DContact | null) {
@@ -134,7 +193,7 @@ export class Player extends Component {
     onShootBullet() {
         this.playerSpine?.setAnimation(1, 'shoot', false);
         if (this.bulletPointer) {
-            mEmitter.instance.emit(EventKey.PLAYER.SHOOT_NORMAL, this.bulletPointer.worldPosition.clone());
+            mEmitter.instance.emit(EventKey.PLAYER.SHOOT_NORMAL, this.bulletPointer.worldPosition.clone(), this.damageMultiplier);
         }
     }
 
@@ -227,18 +286,17 @@ export class Player extends Component {
             this.playerSpine.setCompleteListener(() => {
                 mEmitter.instance.emit(EventKey.PLAYER.ON_DIE, this.node.name);
                 this.playerSpine!.setCompleteListener(null);
-                if (this.node.parent) this.node.parent.destroy();
-                else this.node.destroy();
+                this.node.destroy();
             });
         } else {
             mEmitter.instance.emit(EventKey.PLAYER.ON_DIE, this.node.name);
-            if (this.node.parent) this.node.parent.destroy();
-            else this.node.destroy();
+            this.node.destroy();
         }
     }
 
     onDestroy() {
         mEmitter.instance.off(EventKey.INPUT.SHOOT, this.onShootRequest, this);
+        mEmitter.instance.off(EventKey.PLAYER.ADD_EXP, this.onAddExp, this);
         if (this.playerSpine) this.playerSpine.setCompleteListener(null);
     }
 }

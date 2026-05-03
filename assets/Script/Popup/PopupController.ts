@@ -9,7 +9,13 @@ export class PopupController extends Component {
     popupSetting: Node | null = null;
 
     @property(Node)
+    popupInfor: Node | null = null;
+
+    @property(Node)
     popupPause: Node | null = null;
+
+    @property(Node)
+    popupResult: Node | null = null;
 
     @property(Node)
     overlay: Node | null = null;
@@ -19,13 +25,15 @@ export class PopupController extends Component {
     }
 
     init() {
+        if ((game as any).POPUP_CONTROLLER_EXIST) {
+            this.node.destroy();
+            return;
+        }
+        (game as any).POPUP_CONTROLLER_EXIST = true;
+
         const scene = director.getScene();
         if (scene) {
             this.node.setParent(scene);
-        }
-
-        if (!director.isPersistRootNode(this.node)) {
-            director.addPersistRootNode(this.node);
         }
 
         this.node.setPosition(0, 0, 0);
@@ -65,8 +73,14 @@ export class PopupController extends Component {
             case "SETTING":
                 if (this.popupSetting) this.popupSetting.active = true;
                 break;
+            case "INFOR":
+                if (this.popupInfor) this.popupInfor.active = true;
+                break;
             case "PAUSE":
                 if (this.popupPause) this.popupPause.active = true;
+                break;
+            case "RESULT":
+                if (this.popupResult) this.popupResult.active = true;
                 break;
             default:
                 if (this.overlay) this.overlay.active = false;
@@ -76,7 +90,9 @@ export class PopupController extends Component {
 
     hideAllPopup() {
         if (this.popupSetting) this.popupSetting.active = false;
+        if (this.popupInfor) this.popupInfor.active = false;
         if (this.popupPause) this.popupPause.active = false;
+        if (this.popupResult) this.popupResult.active = false;
         if (this.overlay) this.overlay.active = false;
     }
 
@@ -87,9 +103,10 @@ export class PopupController extends Component {
     }
 
     onDestroy() {
-        director.off(Director.EVENT_AFTER_SCENE_LAUNCH, this.updateCanvasParent, this);
         mEmitter.instance.off(EventKey.POPUP.SHOW, this.showPopup, this);
         mEmitter.instance.off(EventKey.POPUP.HIDE, this.hideAllPopup, this);
         mEmitter.instance.off(EventKey.GAME.PREPARE_FOR_EXIT, this.onSelfDestroy, this);
+        director.off(Director.EVENT_AFTER_SCENE_LAUNCH, this.updateCanvasParent, this);
+        (game as any).POPUP_CONTROLLER_EXIST = false;
     }
 }

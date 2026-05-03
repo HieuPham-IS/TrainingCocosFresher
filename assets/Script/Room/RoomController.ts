@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Vec3, instantiate, UITransform, find } from 'cc';
+import { _decorator, Component, Node, Vec3, instantiate, UITransform, find, Label, sys } from 'cc';
 const { ccclass, property } = _decorator;
 
 import { mEmitter } from '../Util/Event/mEmitter';
@@ -20,6 +20,15 @@ export class RoomController extends Component {
 
     @property({ visible: false })
     private score: number = 0;
+
+    @property(Label)
+    private goldLabel: Label | null = null;
+
+    @property(Label)
+    private killsLabel: Label | null = null;
+
+    @property(Label)
+    private scoreLabel: Label | null = null;
 
     @property(GameAsset)
     public gameAsset: GameAsset | null = null;
@@ -43,6 +52,7 @@ export class RoomController extends Component {
             [EventKey.WAVE.WAVE_COMPLETE]: this.summaryWave.bind(this),
             [EventKey.ROOM.EXIT]: this.onExitRoom.bind(this),
             [EventKey.ROOM.RESET]: this.onResetGame.bind(this),
+            [EventKey.MONSTER.KILLED]: this.onMonsterKilled.bind(this),
         };
 
         for (const event in this.eventHandles) {
@@ -62,6 +72,7 @@ export class RoomController extends Component {
         this.initTitleWave();
         this.scheduleGameStart();
         this.playBackgroundMusic();
+        this.updateStatsUI();
     }
 
     private scheduleGameStart() {
@@ -110,6 +121,17 @@ export class RoomController extends Component {
     }
 
     private gameOver() {
+        let currentTotalGold = Number(sys.localStorage.getItem('totalGold') || 0);
+        currentTotalGold += this.sumGold;
+        sys.localStorage.setItem('totalGold', currentTotalGold.toString());
+
+        mEmitter.instance.emit(EventKey.POPUP.SHOW, "RESULT");
+        this.scheduleOnce(() => {
+            mEmitter.instance.emit(EventKey.ROOM.UPDATE_RESULT, {
+                score: this.score,
+                gold: this.sumGold
+            });
+        }, 0);
         mEmitter.instance.emit(EventKey.ROOM.GAME_OVER);
     }
 
@@ -160,10 +182,22 @@ export class RoomController extends Component {
         mEmitter.instance.emit(EventKey.POPUP.SHOW, "PAUSE");
     }
 
+    private onMonsterKilled(data: { gold: number, score: number, exp: number }) {
+        this.sumGold += data.gold;
+        this.score += data.score;
+        this.sumMonsterKill++;
+        this.updateStatsUI();
+        mEmitter.instance.emit(EventKey.PLAYER.ADD_EXP, data.exp);
+    }
+
+    private updateStatsUI() {
+        if (this.goldLabel) this.goldLabel.string = `${this.sumGold}`;
+        if (this.killsLabel) this.killsLabel.string = `${this.sumMonsterKill}`;
+        if (this.scoreLabel) this.scoreLabel.string = `${this.score}`;
+    }
+
     private onExitRoom() {
-        this.scheduleOnce(() => {
-            mEmitter.instance.emit(EventKey.SCENE.LOAD_LOBBY);
-        }, 0.3);
+        mEmitter.instance.emit(EventKey.SCENE.LOAD_LOBBY);
     }
 
     private onResetGame() {
@@ -172,6 +206,7 @@ export class RoomController extends Component {
         this.sumGold = 0;
         this.sumMonsterKill = 0;
         this.score = 0;
+        this.updateStatsUI();
 
         if (this.componentTitleWave) {
             this.componentTitleWave.init(this.waveCurrent);

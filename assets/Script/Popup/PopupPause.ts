@@ -34,10 +34,9 @@ export class PopupPause extends Component {
     }
 
     onGoHome() {
-
+        director.resume();
         mEmitter.instance.emit(EventKey.POPUP.HIDE);
         this.node.active = false;
         mEmitter.instance.emit(EventKey.ROOM.EXIT);
-        director.resume();
     }
 }

@@ -25,6 +25,9 @@ export const gameConfig = {
                 COEFFICIENT_HP: 10,
                 COEFFICIENT_DAMAGE: 4,
                 DURATION_MOVE: 10,
+                GOLD: 1000,
+                SCORE: 100,
+                EXP: 50,
             },
 
             WOLF: {
@@ -32,12 +35,18 @@ export const gameConfig = {
                 COEFFICIENT_HP: 1,
                 COEFFICIENT_DAMAGE: 1,
                 DURATION_MOVE: 10,
+                GOLD: 100,
+                SCORE: 10,
+                EXP: 10,
             },
             DOG: {
                 NAME: "DOG",
                 COEFFICIENT_HP: 2,
                 COEFFICIENT_DAMAGE: 1.5,
                 DURATION_MOVE: 8,
+                GOLD: 200,
+                SCORE: 20,
+                EXP: 20,
             },
         }
     },

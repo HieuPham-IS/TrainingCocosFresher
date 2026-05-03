@@ -11,11 +11,13 @@ export const EventKey = {
         ON_HIT: 'ON_HIT',
         ON_DIE: 'PLAYER_ON_DIE',
         READY: 'PLAYER_READY',
+        ADD_EXP: 'ADD_EXP',
     },
 
     MONSTER: {
         ON_HIT: 'ON_HIT',
-        ON_DIE: 'ON_DIE'
+        ON_DIE: 'ON_DIE',
+        KILLED: 'MONSTER_KILLED'
     },
 
     SCENE: {

@@ -26,9 +26,6 @@ export class GameController extends Component {
     @property({ visible: false })
     singletonList: any[] = [];
 
-    private roomInitLoad: boolean = false;
-    private lobbyInitLoad: boolean = false;
-
     onLoad(): void {
         this.init();
 
@@ -54,35 +51,23 @@ export class GameController extends Component {
         this.fsm = new StateMachine({
             init: 'init',
             transitions: [
-                { name: 'enterRoom', from: [FSM_STATES.LOBBY, 'init'], to: FSM_STATES.ROOM },
-                { name: 'leaveRoom', from: [FSM_STATES.ROOM, 'init'], to: FSM_STATES.LOBBY },
-                { name: 'requestExit', from: [FSM_STATES.LOBBY, 'init'], to: FSM_STATES.EXITING }
+                { name: 'enterRoom', from: '*', to: FSM_STATES.ROOM },
+                { name: 'leaveRoom', from: '*', to: FSM_STATES.LOBBY },
+                { name: 'requestExit', from: '*', to: FSM_STATES.EXITING }
             ],
             methods: {
-                onEnterLobby: (lifecycle: any) => {
-                    this.emitStateChange(FSM_STATES.LOBBY, lifecycle.from);
-
-                    if (this.isSceneLoading) return;
-                    this.loadSceneInternal('Lobby');
-                },
-
                 onEnterRoom: (lifecycle: any) => {
                     this.emitStateChange(FSM_STATES.ROOM, lifecycle.from);
-
-                    if (this.isSceneLoading) return;
                     this.loadSceneInternal('Room');
                 },
-
+                onLeaveRoom: (lifecycle: any) => {
+                    this.emitStateChange(FSM_STATES.LOBBY, lifecycle.from);
+                    this.loadSceneInternal('Lobby');
+                },
                 onEnterExiting: () => {
                     mEmitter.instance.emit(EventKey.GAME.PREPARE_FOR_EXIT);
                     this.executeExitSteps();
-                },
-                onLeaveRoom: () => {
-                    if (this.isSceneLoading) {
-                        return;
-                    }
-                    this.loadSceneInternal('Lobby');
-                },
+                }
             }
         });
     }
@@ -127,12 +112,10 @@ export class GameController extends Component {
     }
 
     onLoadLobby(): void {
-        if (this.fsm.is(FSM_STATES.LOBBY)) return;
         this.fsm.leaveRoom();
     }
 
     onLoadRoom(): void {
-        if (this.fsm.is(FSM_STATES.ROOM)) return;
         this.fsm.enterRoom();
     }
 
@@ -141,32 +124,8 @@ export class GameController extends Component {
     }
 
     loadSceneInternal(sceneName: string): void {
-        if (this.isSceneLoading) return;
-
         if (director.getScene()?.name === sceneName) return;
-
-        if (sceneName === 'Room' && !this.roomInitLoad) {
-            this.roomInitLoad = true;
-            return;
-        }
-
-        if (sceneName === 'Lobby' && !this.lobbyInitLoad) {
-            this.lobbyInitLoad = true;
-            return;
-        }
-
-        this.isSceneLoading = true;
-
-        director.preloadScene(
-            sceneName,
-            (completed, total) => {
-                console.log(`Preloading ${sceneName}: ${completed}/${total}`);
-
-            },
-            () => {
-                director.loadScene(sceneName);
-            }
-        );
+        director.loadScene(sceneName);
     }
 
     executeExitSteps() {
