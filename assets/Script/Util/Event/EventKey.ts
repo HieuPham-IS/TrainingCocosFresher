@@ -42,6 +42,7 @@ export const EventKey = {
         SUMMARY_GAME: 'SUMMARY_GAME',
         UPDATE_RESULT: 'UPDATE_RESULT',
         EXIT: 'EXIT_ROOM',
+        RESET: 'RESET_ROOM',
     },
     SOUND: {
         SET_BGM_VOLUME: 'SET_BGM_VOLUME',

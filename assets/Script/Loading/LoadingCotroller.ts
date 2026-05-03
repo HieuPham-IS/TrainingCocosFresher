@@ -1,4 +1,4 @@
-import { _decorator, Component, director, Label, Node, ProgressBar, sp, Vec3 } from 'cc';
+import { _decorator, Component, director, Label, Node, ProgressBar, sp, Vec3, sys } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('LoadingCotroller')
@@ -44,14 +44,18 @@ export class LoadingCotroller extends Component {
     }
 
     loadingScene(): void {
-        director.preloadScene('Lobby', (completedCount: number, totalCount: number) => {
-            let process = totalCount > 0 ? completedCount / totalCount : 0;
-            this.onProcessUpdate(process);
-        },
+        const targetScene = sys.localStorage.getItem('targetScene') || 'Lobby';
+
+        director.preloadScene(targetScene,
+            (completedCount: number, totalCount: number) => {
+                const process = totalCount > 0 ? completedCount / totalCount : 0;
+                this.onProcessUpdate(process);
+            },
             () => {
-                director.loadScene('Lobby');
+                sys.localStorage.removeItem('targetScene');
+                director.loadScene(targetScene);
             }
-        )
+        );
     }
 
 

@@ -37,7 +37,8 @@ export class LobbyController extends Component {
 
     onClickStart() {
         mEmitter.instance.emit(EventKey.SOUND.PLAY_SFX, "click");
-        mEmitter.instance.emit(EventKey.SCENE.LOAD_ROOM);
+        sys.localStorage.setItem('targetScene', 'Room');
+        director.loadScene('Loading');
     }
 
     onDestroy() {

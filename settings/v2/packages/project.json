@@ -7,7 +7,12 @@
       "height": 720
     }
   },
-  "layer": [],
+  "layer": [
+    {
+      "name": "POPUP",
+      "value": 1
+    }
+  ],
   "sorting-layer": {
     "layers": [
       {

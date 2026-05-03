@@ -273,6 +273,7 @@ export class MonsterManager extends Component {
             [EventKey.MONSTER.ON_HIT]: this.onMonsterHit.bind(this),
             [EventKey.MONSTER.ON_DIE]: this.onMonsterDie.bind(this),
             [EventKey.ROOM.GAME_OVER]: this.onGameOver.bind(this),
+            [EventKey.ROOM.RESET]: this.onReset.bind(this),
         };
         for (const event in this.eventHandles) {
             mEmitter.instance.on(event, this.eventHandles[event], this);
@@ -320,6 +321,20 @@ export class MonsterManager extends Component {
     clearEditorMonsters() {
         this.node.removeAllChildren();
         this.listChar = [];
+    }
+
+    onReset() {
+        this.unscheduleAllCallbacks();
+        this.node.removeAllChildren();
+        this.listChar = [];
+
+        this.isGameOver = false;
+        this.isWinLevel = true;
+        this.spawnedCount = 0;
+        this.totalMonsters = 0;
+        this.currentWaveData = null;
+        this.sumMonsterKill = 0;
+        this.recentlyUsedLanes = [];
     }
 
 }

@@ -55,7 +55,7 @@ export class GameController extends Component {
             init: 'init',
             transitions: [
                 { name: 'enterRoom', from: [FSM_STATES.LOBBY, 'init'], to: FSM_STATES.ROOM },
-                { name: 'leaveRoom', from: [FSM_STATES.ROOM], to: FSM_STATES.LOBBY },
+                { name: 'leaveRoom', from: [FSM_STATES.ROOM, 'init'], to: FSM_STATES.LOBBY },
                 { name: 'requestExit', from: [FSM_STATES.LOBBY, 'init'], to: FSM_STATES.EXITING }
             ],
             methods: {
@@ -76,6 +76,12 @@ export class GameController extends Component {
                 onEnterExiting: () => {
                     mEmitter.instance.emit(EventKey.GAME.PREPARE_FOR_EXIT);
                     this.executeExitSteps();
+                },
+                onLeaveRoom: () => {
+                    if (this.isSceneLoading) {
+                        return;
+                    }
+                    this.loadSceneInternal('Lobby');
                 },
             }
         });
@@ -122,7 +128,7 @@ export class GameController extends Component {
 
     onLoadLobby(): void {
         if (this.fsm.is(FSM_STATES.LOBBY)) return;
-        this.fsm.enterLobby();
+        this.fsm.leaveRoom();
     }
 
     onLoadRoom(): void {

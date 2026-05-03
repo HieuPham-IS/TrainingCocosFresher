@@ -34,7 +34,15 @@ export class Player extends Component {
     @property
     yInit: number = -100;
 
-    private playerPositionY: number[] = [-450, -200, 250];
+    @property
+    minY: number = -650;
+
+    @property
+    maxY: number = 300;
+
+    @property
+    moveStep: number = 80;
+
 
     public currentHP: number = 0;
     public fsm: any = null;
@@ -119,7 +127,7 @@ export class Player extends Component {
     }
 
     onShootRequest() {
-        if (!this.fsm.is(FSM_STATE.SHOOT)) return;
+        if (this.fsm.is(FSM_STATE.DIE)) return;
         this.onShootBullet();
     }
 
@@ -131,39 +139,59 @@ export class Player extends Component {
     }
 
     handleEnterMoveUp() {
+        if (this.playerSpine) {
+            this.playerSpine.setAnimation(0, 'run', true);
+        }
         const currentY = this.node.position.y;
-        let targetY = currentY;
+        let targetY = currentY + this.moveStep;
 
-        if (currentY === this.playerPositionY[0]) {
-            targetY = this.playerPositionY[1];
-        } else if (currentY === this.playerPositionY[1]) {
-            targetY = this.playerPositionY[2];
+        if (targetY > this.maxY) targetY = this.maxY;
+
+        if (targetY === currentY) {
+            this.backToIdle();
+            return;
         }
 
-        if (targetY === currentY) { this.scheduleOnce(() => { if (this.fsm.can('toShoot')) this.fsm.toShoot(); }, 0); return; }
-
         tween(this.node)
-            .to(this.moveDuration, { position: new Vec3(this.node.position.x, targetY, 0) })
-            .call(() => this.scheduleOnce(() => { if (this.fsm.can('toShoot')) this.fsm.toShoot(); }, 0))
+            .to(this.moveDuration, {
+                position: new Vec3(this.node.position.x, targetY, 0)
+            })
+            .call(() => this.backToIdle())
             .start();
     }
 
     handleEnterMoveDown() {
+        if (this.playerSpine) {
+            this.playerSpine.setAnimation(0, 'run', true);
+        }
         const currentY = this.node.position.y;
-        let targetY = currentY;
+        let targetY = currentY - this.moveStep;
 
-        if (currentY === this.playerPositionY[2]) {
-            targetY = this.playerPositionY[1];
-        } else if (currentY === this.playerPositionY[1]) {
-            targetY = this.playerPositionY[0];
+        if (targetY < this.minY) targetY = this.minY;
+
+        if (targetY === currentY) {
+            this.backToIdle();
+            return;
         }
 
-        if (targetY === currentY) { this.scheduleOnce(() => { if (this.fsm.can('toShoot')) this.fsm.toShoot(); }, 0); return; }
-
         tween(this.node)
-            .to(this.moveDuration, { position: new Vec3(this.node.position.x, targetY, 0) })
-            .call(() => this.scheduleOnce(() => { if (this.fsm.can('toShoot')) this.fsm.toShoot(); }, 0))
+            .to(this.moveDuration, {
+                position: new Vec3(this.node.position.x, targetY, 0)
+            })
+            .call(() => this.backToIdle())
             .start();
+    }
+
+    private backToIdle() {
+        if (this.playerSpine) {
+            this.playerSpine.setAnimation(0, 'idle', true);
+        }
+
+        this.scheduleOnce(() => {
+            if (this.fsm.can('toShoot')) {
+                this.fsm.toShoot();
+            }
+        }, 0);
     }
 
     takeDamage(amount: number) {

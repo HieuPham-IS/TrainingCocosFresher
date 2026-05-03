@@ -56,8 +56,8 @@ export const gameConfig = {
         TIME_START_GAME: 4,
         TIME_NEXT_WAVE: 3,
         WORD_POS: {
-            X: 792,
-            Y: 478,
+            X: 0,
+            Y: 0,
         },
         SUMMARY_GAME: {
             SCORE_ONE_KILL: 10,

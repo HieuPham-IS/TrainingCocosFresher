@@ -5,10 +5,10 @@ const { ccclass, property } = _decorator;
 export class Round extends Component {
 
     @property({ type: Number })
-    public wave: number = 0;
+    wave: number = 0;
 
     @property(Label)
-    public titleWave: Label | null = null;
+    titleWave: Label | null = null;
 
 
     public init(wave: number): void {
@@ -25,7 +25,7 @@ export class Round extends Component {
         if (this.titleWave) {
             this.titleWave.string = `Round ${this.wave}`;
         } else {
-            console.warn("Round Component: Label 'titleWave' chưa được gán trong Inspector!");
+            console.warn("Round Component: Label 'titleWave' no in Inspector!");
         }
     }
 }

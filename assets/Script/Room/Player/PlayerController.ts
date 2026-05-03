@@ -25,6 +25,12 @@ export class PlayerController extends Component {
     createPlayer(): void {
         if (!this.playerPrefab) return;
 
+        if (this.playerNode && this.playerNode.isValid) {
+            this.playerNode.destroy();
+            this.playerNode = null;
+            this.playerScript = null;
+        }
+
         this.playerNode = instantiate(this.playerPrefab);
         this.node.addChild(this.playerNode);
 
@@ -40,13 +46,13 @@ export class PlayerController extends Component {
         this.eventHandlers = {
             [EventKey.INPUT.MOVE_UP]: this.onMoveUp.bind(this),
             [EventKey.INPUT.MOVE_DOWN]: this.onMoveDown.bind(this),
+            [EventKey.ROOM.RESET]: this.onReset.bind(this),
         };
 
         for (const event in this.eventHandlers) {
             mEmitter.instance.on(event, this.eventHandlers[event], this);
         }
     }
-
 
     onMoveUp(): void {
         if (!this.playerScript?.fsm.can('toMoveUp')) return;
@@ -56,6 +62,10 @@ export class PlayerController extends Component {
     onMoveDown(): void {
         if (!this.playerScript?.fsm.can('toMoveDown')) return;
         this.playerScript.fsm.toMoveDown();
+    }
+
+    onReset(): void {
+        this.createPlayer();
     }
 
     onDestroy(): void {

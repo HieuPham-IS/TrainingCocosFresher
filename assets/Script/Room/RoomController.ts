@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Vec3, instantiate, UITransform, AudioSource, PhysicsSystem2D, EPhysics2DDrawFlags } from 'cc';
+import { _decorator, Component, Node, Vec3, instantiate, UITransform, find } from 'cc';
 const { ccclass, property } = _decorator;
 
 import { mEmitter } from '../Util/Event/mEmitter';
@@ -42,6 +42,7 @@ export class RoomController extends Component {
             [EventKey.PLAYER.ON_DIE]: this.gameOver.bind(this),
             [EventKey.WAVE.WAVE_COMPLETE]: this.summaryWave.bind(this),
             [EventKey.ROOM.EXIT]: this.onExitRoom.bind(this),
+            [EventKey.ROOM.RESET]: this.onResetGame.bind(this),
         };
 
         for (const event in this.eventHandles) {
@@ -90,21 +91,17 @@ export class RoomController extends Component {
             this.componentTitleWave.init(this.waveCurrent);
         }
 
-        this.node.addChild(this.titleWave);
-        this.setNodePosition(this.titleWave, position);
+        const canvas = find('Canvas');
+        if (canvas) {
+            canvas.addChild(this.titleWave);
+        }
+
+        this.titleWave.setPosition(position);
     }
 
     private enableTitleWave(enable: boolean) {
         if (this.titleWave) {
             this.titleWave.active = enable;
-        }
-    }
-
-    private setNodePosition(targetNode: Node, worldPos: Vec3) {
-        const uiTransform = this.node.getComponent(UITransform);
-        if (uiTransform) {
-            const localPos = uiTransform.convertToNodeSpaceAR(worldPos);
-            targetNode.setPosition(localPos);
         }
     }
 
@@ -168,4 +165,23 @@ export class RoomController extends Component {
             mEmitter.instance.emit(EventKey.SCENE.LOAD_LOBBY);
         }, 0.3);
     }
+
+    private onResetGame() {
+        this.unscheduleAllCallbacks();
+        this.waveCurrent = 1;
+        this.sumGold = 0;
+        this.sumMonsterKill = 0;
+        this.score = 0;
+
+        if (this.componentTitleWave) {
+            this.componentTitleWave.init(this.waveCurrent);
+        }
+        this.enableTitleWave(true);
+
+        this.scheduleOnce(() => {
+            this.startGame();
+            this.enableTitleWave(false);
+        }, gameConfig.ROOM.TIME_START_GAME);
+    }
+
 }
