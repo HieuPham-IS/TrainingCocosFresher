@@ -8,7 +8,6 @@ const { ccclass, property } = _decorator;
 @ccclass('Monster')
 export class Monster extends MonsterItem {
     onMove() {
-        const randomSpeedFactor = 0.9 + Math.random() * 0.2;
         const adjustedDuration = this.durationMove;
 
         this.moveTween = tween(this.node)
