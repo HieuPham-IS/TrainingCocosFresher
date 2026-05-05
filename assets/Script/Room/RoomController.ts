@@ -5,12 +5,22 @@ import { mEmitter } from '../Util/Event/mEmitter';
 import { EventKey } from '../Util/Event/EventKey';
 import { gameConfig } from '../Util/GameConfig';
 import { GameAsset } from '../Util/GameAsset';
+import { WaveController } from './Monster/WaveController';
 
 @ccclass('RoomController')
 export class RoomController extends Component {
 
-    @property({ visible: false })
-    private waveCurrent: number = 1;
+    private get waveCurrent(): number {
+        const waveCtrl = find('Canvas/WaveController')?.getComponent(WaveController);
+        return waveCtrl ? waveCtrl.currentLevel : 1;
+    }
+
+    private set waveCurrent(val: number) {
+        const waveCtrl = find('Canvas/WaveController')?.getComponent(WaveController);
+        if (waveCtrl) {
+            waveCtrl.currentLevel = val;
+        }
+    }
 
     @property({ visible: false })
     private sumGold: number = 0;
@@ -202,21 +212,22 @@ export class RoomController extends Component {
 
     private onResetGame() {
         this.unscheduleAllCallbacks();
-        this.waveCurrent = 1;
         this.sumGold = 0;
         this.sumMonsterKill = 0;
         this.score = 0;
         this.updateStatsUI();
 
-        if (this.componentTitleWave) {
-            this.componentTitleWave.init(this.waveCurrent);
-        }
-        this.enableTitleWave(true);
-
         this.scheduleOnce(() => {
-            this.startGame();
-            this.enableTitleWave(false);
-        }, gameConfig.ROOM.TIME_START_GAME);
+            if (this.componentTitleWave) {
+                this.componentTitleWave.init(this.waveCurrent);
+            }
+            this.enableTitleWave(true);
+
+            this.scheduleOnce(() => {
+                this.startGame();
+                this.enableTitleWave(false);
+            }, gameConfig.ROOM.TIME_START_GAME);
+        }, 0);
     }
 
 }

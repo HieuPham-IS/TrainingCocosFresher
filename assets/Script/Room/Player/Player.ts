@@ -56,9 +56,10 @@ export class Player extends Component {
     public currentExp: number = 0;
     public damageMultiplier: number = 1;
     public fsm: any = null;
-    public pendingMove: 'up' | 'down' | null = null;
     public heldMoveDirection: 'up' | 'down' | null = null;
+    public pendingMove: 'up' | 'down' | null = null;
     private playerSpine: sp.Skeleton | null = null;
+    private moveTween: any = null;
 
     onLoad() {
         this.init();
@@ -179,6 +180,15 @@ export class Player extends Component {
     }
 
     handleEnterIdle() {
+        if (this.playerSpine) {
+            this.playerSpine.setAnimation(0, 'idle', true);
+        }
+
+        if (this.moveTween) {
+            this.moveTween.stop();
+            this.moveTween = null;
+        }
+
         if (!this.pendingMove) return;
         const move = this.pendingMove;
         this.pendingMove = null;
@@ -204,56 +214,44 @@ export class Player extends Component {
         if (this.playerSpine) {
             this.playerSpine.setAnimation(0, 'run', true);
         }
-        const currentY = this.node.position.y;
-        let targetY = currentY + this.moveStep;
-
-        if (targetY > this.maxY) targetY = this.maxY;
-
-        if (targetY === currentY) {
-            this.backToIdle();
-            return;
-        }
-
-        tween(this.node)
-            .to(this.moveDuration, {
-                position: new Vec3(this.node.position.x, targetY, 0)
-            })
-            .call(() => this.backToIdle())
-            .start();
+        this.startContinuousTween('up');
     }
 
     handleEnterMoveDown() {
         if (this.playerSpine) {
             this.playerSpine.setAnimation(0, 'run', true);
         }
+        this.startContinuousTween('down');
+    }
+
+    private startContinuousTween(direction: 'up' | 'down') {
+        if (this.moveTween) {
+            this.moveTween.stop();
+            this.moveTween = null;
+        }
+
         const currentY = this.node.position.y;
-        let targetY = currentY - this.moveStep;
+        const targetY = direction === 'up' ? this.maxY : this.minY;
 
-        if (targetY < this.minY) targetY = this.minY;
-
-        if (targetY === currentY) {
+        if (currentY === targetY) {
             this.backToIdle();
             return;
         }
 
-        tween(this.node)
-            .to(this.moveDuration, {
-                position: new Vec3(this.node.position.x, targetY, 0)
-            })
+        const speed = this.moveStep / this.moveDuration;
+        const distance = Math.abs(targetY - currentY);
+        const time = distance / speed;
+
+        this.moveTween = tween(this.node)
+            .to(time, { position: new Vec3(this.node.position.x, targetY, 0) })
             .call(() => this.backToIdle())
             .start();
     }
 
     private backToIdle() {
-        if (this.playerSpine) {
-            this.playerSpine.setAnimation(0, 'idle', true);
+        if (this.fsm.can('toIdle')) {
+            this.fsm.toIdle();
         }
-
-        this.scheduleOnce(() => {
-            if (this.fsm.can('toIdle')) {
-                this.fsm.toIdle();
-            }
-        }, 0);
     }
 
     takeDamage(amount: number) {

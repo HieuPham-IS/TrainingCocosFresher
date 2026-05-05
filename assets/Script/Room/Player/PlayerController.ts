@@ -50,6 +50,7 @@ export class PlayerController extends Component {
             [EventKey.INPUT.MOVE_UP_RELEASE]: this.onMoveUpRelease.bind(this),
             [EventKey.INPUT.MOVE_DOWN_RELEASE]: this.onMoveDownRelease.bind(this),
             [EventKey.ROOM.RESET]: this.onReset.bind(this),
+            [EventKey.ROOM.GAME_OVER]: this.onGameOver.bind(this),
         };
 
         for (const event in this.eventHandlers) {
@@ -59,6 +60,7 @@ export class PlayerController extends Component {
 
     onMoveUp(): void {
         if (!this.playerScript || director.isPaused()) return;
+        if (this.playerScript.heldMoveDirection === 'up') return;
         this.playerScript.heldMoveDirection = 'up';
         if (this.playerScript.fsm.can('toMoveUp')) {
             this.playerScript.fsm.toMoveUp();
@@ -69,6 +71,7 @@ export class PlayerController extends Component {
 
     onMoveDown(): void {
         if (!this.playerScript || director.isPaused()) return;
+        if (this.playerScript.heldMoveDirection === 'down') return;
         this.playerScript.heldMoveDirection = 'down';
         if (this.playerScript.fsm.can('toMoveDown')) {
             this.playerScript.fsm.toMoveDown();
@@ -85,6 +88,9 @@ export class PlayerController extends Component {
         if (this.playerScript.pendingMove === 'up') {
             this.playerScript.pendingMove = null;
         }
+        if (this.playerScript.fsm.is('moveUp')) {
+            this.playerScript.fsm.toIdle();
+        }
     }
 
     onMoveDownRelease(): void {
@@ -95,10 +101,21 @@ export class PlayerController extends Component {
         if (this.playerScript.pendingMove === 'down') {
             this.playerScript.pendingMove = null;
         }
+        if (this.playerScript.fsm.is('moveDown')) {
+            this.playerScript.fsm.toIdle();
+        }
     }
 
     onReset(): void {
         this.createPlayer();
+    }
+
+    onGameOver(): void {
+        if (this.playerNode && this.playerNode.isValid) {
+            this.playerNode.destroy();
+            this.playerNode = null;
+            this.playerScript = null;
+        }
     }
 
     onDestroy(): void {

@@ -64,9 +64,14 @@ export class WaveController extends Component {
         this.startWave();
     }
 
+    onReset(): void {
+        this.currentLevel = 1;
+    }
+
     registerEvent(): void {
         this.eventMap = new Map<string, (...args: any[]) => void>([
-            [EventKey.WAVE.START_WAVE, this.startSpecificWave.bind(this)]
+            [EventKey.WAVE.START_WAVE, this.startSpecificWave.bind(this)],
+            [EventKey.ROOM.RESET, this.onReset.bind(this)]
         ]);
 
         this.eventMap.forEach((handler, key) => {

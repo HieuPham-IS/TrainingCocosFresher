@@ -62,7 +62,6 @@ export class MonsterItem extends Component {
     updateHP() {
         this.updateHPBar();
         if (this.hp <= 0) {
-
             mEmitter.instance.emit(EventKey.MONSTER.ON_DIE, this);
         }
     }
