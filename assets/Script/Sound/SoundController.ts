@@ -1,47 +1,63 @@
-import { _decorator, Component, Node, AudioClip, AudioSource, sys, game, director } from 'cc';
+import { _decorator, Component, Node, AudioClip, AudioSource, game, sys, director } from 'cc';
 const { ccclass, property } = _decorator;
+
 import { mEmitter } from '../Util/Event/mEmitter';
 import { EventKey } from '../Util/Event/EventKey';
 
 @ccclass('SoundController')
 export class SoundController extends Component {
-    @property({ type: [AudioClip] })
-    public bgmList: AudioClip[] = [];
 
-    @property({ type: [AudioClip] })
-    public sfxList: AudioClip[] = [];
+    @property([AudioClip])
+    bgmList: AudioClip[] = [];
 
-    @property({ slide: true, range: [0, 1, 0.1] })
-    public bgmVolume: number = 1;
+    @property([AudioClip])
+    sfxList: AudioClip[] = [];
 
-    @property({ slide: true, range: [0, 1, 0.1] })
-    public sfxVolume: number = 0.5;
+    @property
+    bgmVolume: number = 1;
+
+    @property
+    sfxVolume: number = 1;
 
     private bgmSource: AudioSource | null = null;
     private sfxSource: AudioSource | null = null;
 
-    private readonly BGM_KEY = 'BGM_VOLUME_KEY';
-    private readonly SFX_KEY = 'SFX_VOLUME_KEY';
+    private BGM_KEY = 'BGM_VOLUME';
+    private SFX_KEY = 'SFX_VOLUME';
 
     onLoad() {
         this.init();
     }
 
     init() {
-        if (game['SOUND_CONTROLLER_EXIST']) {
+        if ((game as any).SOUND_CONTROLLER_EXIST) {
             this.node.destroy();
             return;
         }
-        game['SOUND_CONTROLLER_EXIST'] = true;
-        director.addPersistRootNode(this.node);
+        (game as any).SOUND_CONTROLLER_EXIST = true;
 
-        this.bgmSource = this.node.getComponent(AudioSource) || this.node.addComponent(AudioSource);
+        this.bgmSource = this.node.addComponent(AudioSource);
         this.sfxSource = this.node.addComponent(AudioSource);
 
-        this.getStoredVolumes();
+        this.bgmSource.loop = true;
+
+        this.loadVolume();
         this.registerEvents();
 
-        console.log(`SoundController initialized. BGM: ${this.bgmVolume}, SFX: ${this.sfxVolume}`);
+        director.addPersistRootNode(this.node);
+
+        // console.log('[SoundController] init', this.bgmVolume, this.sfxVolume);
+    }
+
+    loadVolume() {
+        const bgm = parseFloat(sys.localStorage.getItem(this.BGM_KEY) || '1');
+        const sfx = parseFloat(sys.localStorage.getItem(this.SFX_KEY) || '1');
+
+        this.bgmVolume = bgm;
+        this.sfxVolume = sfx;
+
+        if (this.bgmSource) this.bgmSource.volume = bgm;
+        if (this.sfxSource) this.sfxSource.volume = sfx;
     }
 
     registerEvents() {
@@ -51,68 +67,11 @@ export class SoundController extends Component {
         mEmitter.instance.on(EventKey.SOUND.PLAY_SFX, this.playSFX, this);
         mEmitter.instance.on(EventKey.SOUND.PLAY_BGM, this.playBGM, this);
         mEmitter.instance.on(EventKey.SOUND.STOP_BGM, this.stopBGM, this);
-
-        mEmitter.instance.on(EventKey.GAME.PREPARE_FOR_EXIT, this.onSelfDestroy, this);
+        mEmitter.instance.on(EventKey.GAME.PREPARE_FOR_EXIT, this.onDestroySelf, this);
     }
 
-    getStoredVolumes() {
-        const storedBgm = sys.localStorage.getItem(this.BGM_KEY);
-        const storedSfx = sys.localStorage.getItem(this.SFX_KEY);
-
-        if (storedBgm !== null) this.bgmVolume = parseFloat(storedBgm);
-        if (storedSfx !== null) this.sfxVolume = parseFloat(storedSfx);
-
-        this.applyVolumes();
-    }
-
-    setBGMVolume(newVolume: number) {
-        this.bgmVolume = newVolume;
-        if (this.bgmSource) this.bgmSource.volume = this.bgmVolume;
-        sys.localStorage.setItem(this.BGM_KEY, this.bgmVolume.toString());
-    }
-
-    setSFXVolume(newVolume: number) {
-        this.sfxVolume = newVolume;
-        if (this.sfxSource) this.sfxSource.volume = this.sfxVolume;
-        sys.localStorage.setItem(this.SFX_KEY, this.sfxVolume.toString());
-    }
-
-    private applyVolumes() {
-        if (this.bgmSource) this.bgmSource.volume = this.bgmVolume;
-        if (this.sfxSource) this.sfxSource.volume = this.sfxVolume;
-    }
-
-    onEnableBGM(isEnabled: boolean, bgmName: string) {
-        if (isEnabled) {
-            this.playBGM(bgmName);
-        } else {
-            this.stopBGM();
-        }
-    }
-
-    playBGM(bgmName: string) {
-        const clip = this.bgmList.find(c => c.name === bgmName);
-        if (clip && this.bgmSource) {
-            this.bgmSource.stop();
-            this.bgmSource.clip = clip;
-            this.bgmSource.loop = true;
-            this.bgmSource.play();
-        }
-    }
-
-    playSFX(sfxName: string) {
-        const clip = this.sfxList.find(c => c.name === sfxName);
-        if (clip) {
-            this.sfxSource?.playOneShot(clip, this.sfxVolume);
-        }
-    }
-
-    stopBGM() {
-        this.bgmSource?.stop();
-    }
-
-    onSelfDestroy() {
-        game.removePersistRootNode(this.node);
+    onDestroySelf() {
+        director.removePersistRootNode(this.node);
         this.node.destroy();
     }
 
@@ -124,6 +83,67 @@ export class SoundController extends Component {
         mEmitter.instance.off(EventKey.SOUND.PLAY_BGM, this.playBGM, this);
         mEmitter.instance.off(EventKey.SOUND.STOP_BGM, this.stopBGM, this);
 
-        game['SOUND_CONTROLLER_EXIST'] = false;
+        (game as any).SOUND_CONTROLLER_EXIST = false;
+    }
+
+    setBGMVolume(volume: number) {
+        this.bgmVolume = volume;
+
+        if (this.bgmSource) {
+            this.bgmSource.volume = volume;
+        }
+
+        sys.localStorage.setItem(this.BGM_KEY, volume.toString());
+    }
+
+    onEnableBGM(isEnabled: boolean, bgmName: string) {
+        if (isEnabled) {
+            this.playBGM(bgmName);
+        } else {
+            this.stopBGM();
+        }
+    }
+
+    playBGM(bgmName: string) {
+        if (!this.bgmSource) return;
+
+        const clip = this.bgmList.find(c => c.name === bgmName);
+        if (!clip) {
+            console.log('BGM not found:', bgmName);
+            return;
+        }
+
+        this.bgmSource.stop();
+        this.bgmSource.clip = clip;
+        this.bgmSource.loop = true;
+        this.bgmSource.play();
+    }
+
+    stopBGM() {
+        if (this.bgmSource) {
+            this.bgmSource.stop();
+        }
+    }
+
+    setSFXVolume(volume: number) {
+        this.sfxVolume = volume;
+
+        if (this.sfxSource) {
+            this.sfxSource.volume = volume;
+        }
+
+        sys.localStorage.setItem(this.SFX_KEY, volume.toString());
+    }
+
+    playSFX(sfxName: string) {
+        if (!this.sfxSource) return;
+
+        const clip = this.sfxList.find(c => c.name === sfxName);
+        if (!clip) {
+            console.log('SFX not found:', sfxName);
+            return;
+        }
+
+        this.sfxSource.playOneShot(clip, this.sfxVolume);
     }
 }

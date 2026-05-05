@@ -19,22 +19,24 @@ export class PopupPause extends Component {
     }
 
     onOpenSetting() {
+        mEmitter.instance.emit(EventKey.SOUND.PLAY_SFX, "click");
         if (this.popupSetting) {
             this.popupSetting.active = true;
-
         }
     }
 
     onResetGame() {
         director.resume();
-        const sceneName = director.getScene()?.name;
-        if (sceneName) {
-            director.loadScene(sceneName);
-        }
+        mEmitter.instance.emit(EventKey.SOUND.PLAY_SFX, "click");
+        mEmitter.instance.emit(EventKey.ROOM.RESET);
+        mEmitter.instance.emit(EventKey.POPUP.HIDE);
+        this.node.active = false;
     }
 
     onGoHome() {
         director.resume();
-        director.loadScene('Lobby');
+        mEmitter.instance.emit(EventKey.POPUP.HIDE);
+        this.node.active = false;
+        mEmitter.instance.emit(EventKey.ROOM.EXIT);
     }
 }

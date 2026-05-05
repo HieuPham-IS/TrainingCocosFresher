@@ -44,7 +44,6 @@ export class MonsterItem extends Component {
         this.id = data.id;
         this.type = data.type;
         this.hp = data.hp;
-        console.log(`Monster ${this.id} initialized with HP: ${this.hp}`);
         this.maxHp = data.maxHp;
         this.damage = data.damage;
         this.hpBar.progress = 1;

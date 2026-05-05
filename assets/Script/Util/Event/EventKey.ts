@@ -2,6 +2,8 @@ export const EventKey = {
     INPUT: {
         MOVE_UP: 'MOVE_UP',
         MOVE_DOWN: 'MOVE_DOWN',
+        MOVE_UP_RELEASE: 'MOVE_UP_RELEASE',
+        MOVE_DOWN_RELEASE: 'MOVE_DOWN_RELEASE',
         MOVE_LEFT: 'MOVE_LEFT',
         MOVE_RIGHT: 'MOVE_RIGHT',
         SHOOT: 'SHOOT',
@@ -11,11 +13,13 @@ export const EventKey = {
         ON_HIT: 'ON_HIT',
         ON_DIE: 'PLAYER_ON_DIE',
         READY: 'PLAYER_READY',
+        ADD_EXP: 'ADD_EXP',
     },
 
     MONSTER: {
         ON_HIT: 'ON_HIT',
-        ON_DIE: 'ON_DIE'
+        ON_DIE: 'ON_DIE',
+        KILLED: 'MONSTER_KILLED'
     },
 
     SCENE: {
@@ -42,6 +46,7 @@ export const EventKey = {
         SUMMARY_GAME: 'SUMMARY_GAME',
         UPDATE_RESULT: 'UPDATE_RESULT',
         EXIT: 'EXIT_ROOM',
+        RESET: 'RESET_ROOM',
     },
     SOUND: {
         SET_BGM_VOLUME: 'SET_BGM_VOLUME',

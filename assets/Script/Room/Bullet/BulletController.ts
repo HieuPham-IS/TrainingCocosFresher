@@ -26,12 +26,12 @@ export class BulletController extends Component {
         this.unregisterEvent();
     }
 
-    initBulletByType(type: any, worldPos: Vec3): void {
-        const bulletData = this.createBullet(type);
+    initBulletByType(type: any, worldPos: Vec3, damageMultiplier: number = 1): void {
+        const bulletData = this.createBullet(type, damageMultiplier);
         this.setupBullet(bulletData, worldPos);
     }
 
-    createBullet(type: any): { bullet: Node, component: BulletItem } {
+    createBullet(type: any, damageMultiplier: number = 1): { bullet: Node, component: BulletItem } {
         const prefab: Prefab = this.gameAsset!.getBulletPrefabByType(type.NAME);
         const bullet = instantiate(prefab);
 
@@ -43,12 +43,12 @@ export class BulletController extends Component {
         return { bullet, component };
     }
 
-    getBulletInitData(type: any) {
+    getBulletInitData(type: any, damageMultiplier: number = 1) {
         const initData = {
             id: this.generateBulletId(),
             type: type.NAME,
             durationMove: type.DURATION_MOVE,
-            damage: type.DAMAGE,
+            damage: type.DAMAGE * damageMultiplier,
         };
 
         // console.log('getBulletInitData:', initData);
@@ -87,6 +87,7 @@ export class BulletController extends Component {
     registerEvent(): void {
         this.eventHandles = {
             [EventKey.PLAYER.SHOOT_NORMAL]: this.onShootNormalBullet.bind(this),
+            [EventKey.ROOM.RESET]: this.onReset.bind(this),
         };
 
         for (const event in this.eventHandles) {
@@ -104,8 +105,13 @@ export class BulletController extends Component {
         this.eventHandles = null;
     }
 
-    onShootNormalBullet(worldPos: Vec3): void {
-        this.initBulletByType(gameConfig.BULLET.TYPE.NORMAL, worldPos);
+    onShootNormalBullet(worldPos: Vec3, damageMultiplier: number = 1): void {
+        this.initBulletByType(gameConfig.BULLET.TYPE.NORMAL, worldPos, damageMultiplier);
+    }
+
+    onReset(): void {
+        this.node.removeAllChildren();
+        this.listBullet = [];
     }
 
     clearEditorPlacedBullets(): void {

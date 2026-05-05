@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Prefab, instantiate } from 'cc';
+import { _decorator, Component, Node, Prefab, instantiate, director } from 'cc';
 const { ccclass, property } = _decorator;
 import { mEmitter } from '../../Util/Event/mEmitter';
 import { EventKey } from '../../Util/Event/EventKey';
@@ -12,6 +12,7 @@ export class PlayerController extends Component {
     private playerScript: Player | null = null;
     private playerIndex: number = 0;
     private eventHandlers: Record<string, (...args: any[]) => void> | null = null;
+    private isPaused: boolean = false;
 
     onLoad(): void {
         this.init();
@@ -24,6 +25,12 @@ export class PlayerController extends Component {
 
     createPlayer(): void {
         if (!this.playerPrefab) return;
+
+        if (this.playerNode && this.playerNode.isValid) {
+            this.playerNode.destroy();
+            this.playerNode = null;
+            this.playerScript = null;
+        }
 
         this.playerNode = instantiate(this.playerPrefab);
         this.node.addChild(this.playerNode);
@@ -40,6 +47,9 @@ export class PlayerController extends Component {
         this.eventHandlers = {
             [EventKey.INPUT.MOVE_UP]: this.onMoveUp.bind(this),
             [EventKey.INPUT.MOVE_DOWN]: this.onMoveDown.bind(this),
+            [EventKey.INPUT.MOVE_UP_RELEASE]: this.onMoveUpRelease.bind(this),
+            [EventKey.INPUT.MOVE_DOWN_RELEASE]: this.onMoveDownRelease.bind(this),
+            [EventKey.ROOM.RESET]: this.onReset.bind(this),
         };
 
         for (const event in this.eventHandlers) {
@@ -47,15 +57,48 @@ export class PlayerController extends Component {
         }
     }
 
-
     onMoveUp(): void {
-        if (!this.playerScript?.fsm.can('toMoveUp')) return;
-        this.playerScript.fsm.toMoveUp();
+        if (!this.playerScript || director.isPaused()) return;
+        this.playerScript.heldMoveDirection = 'up';
+        if (this.playerScript.fsm.can('toMoveUp')) {
+            this.playerScript.fsm.toMoveUp();
+        } else {
+            this.playerScript.pendingMove = 'up';
+        }
     }
 
     onMoveDown(): void {
-        if (!this.playerScript?.fsm.can('toMoveDown')) return;
-        this.playerScript.fsm.toMoveDown();
+        if (!this.playerScript || director.isPaused()) return;
+        this.playerScript.heldMoveDirection = 'down';
+        if (this.playerScript.fsm.can('toMoveDown')) {
+            this.playerScript.fsm.toMoveDown();
+        } else {
+            this.playerScript.pendingMove = 'down';
+        }
+    }
+
+    onMoveUpRelease(): void {
+        if (!this.playerScript) return;
+        if (this.playerScript.heldMoveDirection === 'up') {
+            this.playerScript.heldMoveDirection = null;
+        }
+        if (this.playerScript.pendingMove === 'up') {
+            this.playerScript.pendingMove = null;
+        }
+    }
+
+    onMoveDownRelease(): void {
+        if (!this.playerScript) return;
+        if (this.playerScript.heldMoveDirection === 'down') {
+            this.playerScript.heldMoveDirection = null;
+        }
+        if (this.playerScript.pendingMove === 'down') {
+            this.playerScript.pendingMove = null;
+        }
+    }
+
+    onReset(): void {
+        this.createPlayer();
     }
 
     onDestroy(): void {
